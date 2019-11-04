@@ -69,7 +69,7 @@ export default class SuperblocksProvider {
     }
 
     public sendMessage = (payload: any, networkVersion: string, callback: any) => {
-        if (status === 'unconnected') {
+        if (this.status === 'unconnected') {
             this.log('Waiting for connection...');
             setTimeout( () => {
                 this.sendMessage(payload, networkVersion, callback);
@@ -136,7 +136,7 @@ export default class SuperblocksProvider {
 
     private sendSocketMessage(payload: IRPCPayload, networkVersion: any, callback: any) {
         const id = this.msgCounter++;
-        const msg = {payload, id, networkVersion};
+        const msg = { payload, id, networkVersion };
         this.pending[id] = callback;
         this.socket.emit('message', msg);
     }
