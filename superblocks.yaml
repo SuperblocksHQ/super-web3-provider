@@ -4,17 +4,21 @@
 
 version: 1
 jobs:
-  compile:
-    image: node
+  deploy_to_npm:
+    image: node:10
     script:
-      - echo Hello world!
-  test:
-    image: node
-    script:
-      - echo Multiple Jobs can be defined the same way as single jobs
-      - echo http://superblocks.com/docs/configuration/configuration-introduction/#section=configuration
+      - npm i
+      - npm install -g npm-install-peers
+      - npm-install-peers
+      - npm run build
+      - npm install -g npm-cli-login
+      - npm-cli-login -u $NPM_USER -p $NPM_PASSWORD -e $NPM_EMAIL
+      - npm run publish-lib 
+
 stages:
-  - custom_sequence:
+  - deploy:
       jobs:
-        - compile
-        - test
+        - deploy_to_npm:
+            only:
+              - master
+©
