@@ -1,8 +1,9 @@
 {
   "name": "super-web3-provider",
-  "version": "0.0.1-beta.1",
+  "version": "0.0.1-beta.2",
   "description": "Web3 provider to create a secure channel between our CI runners and the Superblocks platform to handle Smart Contract deployments through our blockchain dedicated CI/CD platform",
-  "main": "lib/index.js",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
   "scripts": {
     "build": "tsc",
     "publish-lib": "node publish.js",

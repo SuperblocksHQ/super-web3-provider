@@ -4,8 +4,6 @@ jobs:
     image: node:10
     script:
       - npm i
-      - npm install -g npm-install-peers
-      - npm-install-peers
       - npm run build
       - npm install -g npm-cli-login
       - npm-cli-login -u $NPM_USER -p $NPM_PASSWORD -e $NPM_EMAIL

@@ -36,7 +36,7 @@ interface IRPCPayload {
     params: [any];
 }
 
-export class SuperblocksProvider {
+export default class SuperblocksProvider {
 
     // Pre-defined variable setup by the Superblocks CI when executing the job including the deployment process
     private readonly SESSION_ID: string = process.env.SUPER_SESSION_ID;
