@@ -19,5 +19,6 @@ stages:
   - deploy:
       jobs:
         - deploy_to_npm:
+          filters:
             only:
               - master
