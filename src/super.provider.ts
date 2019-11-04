@@ -1,131 +1,146 @@
 // Copyright 2019 Superblocks AB
 //
+// This file is part of Superblocks Lab.
+//
+// Superblocks Lab is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation version 3 of the License.
+//
+// Superblocks Lab is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with Superblocks. If not, see <http://www.gnu.org/licenses/>.
 
-'use strict';
+import io from 'socket.io-client';
 
-const io = require('socket.io-client');
-const url = require('url');
-
-const pending = {};
-let msgCounter = 0;
-let socket = null;
-let status = 'unconnected';
-
-const handleMessage = (msg) => {
-    if (pending[msg.id]) {
-        const cb = pending[msg.id];
-        delete pending[msg.id];
-	       if (msg.payload.err) {
-		console.log('error occured: ', msg.payload.err);
-	}
-        cb(msg.payload.err, msg.payload.res);
-    }
-};
-
-const sendMessage = (payload, networkVersion, callback) => {
-    if (status === 'unconnected') {
-        log('Waiting for connection...');
-        setTimeout( () => {
-            sendMessage(payload, networkVersion, callback);
-        }, 1000);
-        return;
-    }
-
-    if (payload.method == 'eth_sendTransaction' || payload.method == 'eth_sign') {
-        log('Waiting for user to sign transaction with Metamask...');
-    }
-
-    // TODO: Add a timeout for responses so we can abort in a sane manner.
-    _sendMessage(payload, networkVersion, callback);
-};
-
-const _sendMessage = (payload, networkVersion, callback) => {
-    const id = msgCounter++;
-    const msg = {payload, id, networkVersion};
-    pending[id] = callback;
-    socket.emit('message', msg);
-};
-
-const log = msg => {
-    console.log('[SuperblocksProvider] ' + (msg !== null ? msg : '') );
-};
-
-function SuperblocksProvider(sessionId, addresses, options) {
-    // We use a singleton pattern here since we do not want to create mutliple sockets if the
-    // callee is lazy and is recreating this object when it does not have to.
-    sessionId = sessionId.toString();
-
-    if (SuperblocksProvider.prototype._instances[sessionId]) {
-        return SuperblocksProvider.prototype._instances[sessionId];
-    }
-    SuperblocksProvider.prototype._instances[sessionId] = this;
-
-    if (addresses instanceof Array) {
-        this.addresses = addresses;
-    } else if (typeof addresses == 'string') {
-        this.addresses = [addresses];
-    } else {
-        this.addresses = [];
-    }
-
-    this.vendor = 'Superblocks';
-    this.networkVersion = null;
-    this.options = options || {};
-    this.sessionId = sessionId;
-
-    this.options.proxyUrl = this.options.proxyUrl || 'https://api.superblocks.com/v1/web3-hub/provider';
-
-    const { protocol, host, pathname } = new URL(this.options.proxyUrl);
-
-    // Socket.io uses namespaces instead of routes, so must manually specify route
-    socket = io(`${protocol}//${host}`, {path: pathname});
-
-    if (!socket) {
-        throw new Error('Could not instantiate socket.');
-    }
-
-    socket.emit('handshake', {id: sessionId});
-
-    socket.on('paired', () => {
-        log('Socket connected');
-        socket.on('message', handleMessage);
-
-        if (this.options.fetchAddresses !== false && this.addresses.length === 0) {
-            log('Fetch addresses from Metamask');
-            const payload = { jsonrpc: '2.0', id: 1, method: 'eth_accounts', params: [] };
-            _sendMessage(payload, this.networkVersion, (err, res) => {
-                status = 'connected';
-            });
-        } else {
-            status = 'connected';
-        }
-    });
-
-    return this;
+interface IProviderOptions {
+    proxyUrl: string;
+    addresses: [string];
 }
 
-SuperblocksProvider.prototype._instances = {};
+interface IMessage {
+    id: string;
+    payload: {
+        err: any;
+        res: any;
+    };
+}
 
-SuperblocksProvider.prototype.prepareRequest = function(async) {
-    throw new Error('Not implemented.');
-};
+interface IRPCPayload {
+    jsonrpc: string;
+    id: number;
+    method: string;
+    params: [any];
+}
 
-SuperblocksProvider.prototype.isConnected = function() {
-    return status === 'connected';
-};
+export class SuperblocksProvider {
+    private addresses: [string];
+    private options: IProviderOptions;
+    private pending: any = {};
+    private socket = io.Socket = {} as SocketIOClient.Socket;
+    private msgCounter = 0;
+    private status = 'unconnected';
+    private networkVersion: string;
 
-SuperblocksProvider.prototype.sendAsync = function(payload, callback) {
-    sendMessage(payload, this.networkVersion, callback);
-};
+    // Pre-defined variable setup by the Superblocks CI when executing the job including the deployment process
+    private readonly SESSION_ID: string = process.env.SUPER_SESSION_ID;
 
-SuperblocksProvider.prototype.send = SuperblocksProvider.prototype.sendAsync;
 
-SuperblocksProvider.prototype.getAddress = function(index) {
-    return this.addresses[index];
-};
+    constructor(options: IProviderOptions) {
+        this.options = options;
 
-SuperblocksProvider.prototype.getAddresses = function() {
-    return this.addresses;
-};
+        this._init();
+    }
 
-module.exports = SuperblocksProvider;
+    public handleMessage(msg: IMessage) {
+        if (this.pending[msg.id]) {
+            const cb = this.pending[msg.id];
+            delete this.pending[msg.id];
+
+            if (msg.payload.err) {
+                this._log(`error occurred: ${msg.payload.err}`);
+            }
+            cb(msg.payload.err, msg.payload.res);
+        }
+    }
+
+    public sendMessage = (payload: any, networkVersion: string, callback: any) => {
+        if (status === 'unconnected') {
+            this._log('Waiting for connection...');
+            setTimeout( () => {
+                this.sendMessage(payload, networkVersion, callback);
+            }, 1000);
+            return;
+        }
+
+        if (payload.method === 'eth_sendTransaction' || payload.method === 'eth_sign') {
+            console.log('Waiting for user to sign transaction with Metamask...');
+        }
+
+        // TODO: Add a timeout for responses so we can abort in a sane manner.
+        this._sendMessage(payload, networkVersion, callback);
+    }
+
+    public prepareRequest = (_async: any) => {
+        throw new Error('Not implemented.');
+    }
+
+    public isConnected = () => {
+        return this.status === 'connected';
+    }
+
+    public send = (payload: any, callback: any) => {
+        this.sendAsync(payload, callback);
+    }
+
+    public sendAsync = (payload: any, callback: any) => {
+        this.sendMessage(payload, this.networkVersion, callback);
+    }
+
+    public getAddress = (index: number) => {
+        return this.addresses[index];
+    }
+
+    public getAddresses = () => {
+        return this.addresses;
+    }
+
+    private _init() {
+        this.networkVersion = null;
+        this.options.proxyUrl = this.options.proxyUrl || 'https://api.superblocks.com/v1/web3-hub/provider';
+
+        const { protocol, host, pathname } = new URL(this.options.proxyUrl);
+
+        // Socket.io uses namespaces instead of routes, so must manually specify route
+        this.socket = io(`${protocol}//${host}`, { path: pathname });
+        if (!this.socket) {
+            throw new Error('Could not instantiate socket.');
+        }
+
+        this.socket.emit('handshake', { id: this.SESSION_ID });
+        this.socket.on('paired', () => {
+            this._log('Socket connected');
+            this.socket.on('message', this.handleMessage);
+
+            this._log('Fetch addresses from Metamask');
+            const payload = { jsonrpc: '2.0', id: 1, method: 'eth_accounts', params: <any>[] };
+            this._sendMessage(payload, this.networkVersion, (_err: any, _res: any) => {
+                this.status = 'connected';
+            });
+        });
+    }
+
+    private _sendMessage(payload: IRPCPayload, networkVersion: any, callback: any) {
+        const id = this.msgCounter++;
+        const msg = {payload, id, networkVersion};
+        this.pending[id] = callback;
+        this.socket.emit('message', msg);
+    }
+
+    private _log(msg: any) {
+        console.log('[SuperblocksProvider] ' + (msg !== null ? msg : '') );
+    }
+}
