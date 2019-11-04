@@ -37,6 +37,11 @@ interface IRPCPayload {
 }
 
 export class SuperblocksProvider {
+
+    // Pre-defined variable setup by the Superblocks CI when executing the job including the deployment process
+    private readonly SESSION_ID: string = process.env.SUPER_SESSION_ID;
+    private readonly DEFAULT_PROXY_URL: string = 'https://api.superblocks.com/v1/web3-hub/provider';
+
     private addresses: [string];
     private options: IProviderOptions;
     private pending: any = {};
@@ -44,10 +49,6 @@ export class SuperblocksProvider {
     private msgCounter = 0;
     private status = 'unconnected';
     private networkVersion: string;
-
-    // Pre-defined variable setup by the Superblocks CI when executing the job including the deployment process
-    private readonly SESSION_ID: string = process.env.SUPER_SESSION_ID;
-
 
     constructor(options: IProviderOptions) {
         this.options = options;
@@ -110,7 +111,7 @@ export class SuperblocksProvider {
 
     private init() {
         this.networkVersion = null;
-        this.options.proxyUrl = this.options.proxyUrl || 'https://api.superblocks.com/v1/web3-hub/provider';
+        this.options.proxyUrl = this.options.proxyUrl || this.DEFAULT_PROXY_URL;
 
         const { protocol, host, pathname } = new URL(this.options.proxyUrl);
 
