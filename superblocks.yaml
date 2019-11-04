@@ -21,4 +21,3 @@ stages:
         - deploy_to_npm:
             only:
               - master
-©
