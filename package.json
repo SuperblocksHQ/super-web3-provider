@@ -1,0 +1,30 @@
+{
+  "name": "super-web3-provider",
+  "version": "0.0.1-beta.1",
+  "description": "Web3 provider to create a secure channel between our CI runners and the Superblocks platform to handle Smart Contract deployments through our blockchain dedicated CI/CD platform",
+  "main": "lib/index.js",
+  "scripts": {
+    "build": "tsc",
+    "publish-lib": "node publish.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git@github.com:SuperblocksHQ/super-web3-provider.git"
+  },
+  "author": "Superblocks",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/SuperblocksHQ/super-web3-provider/issues"
+  },
+  "homepage": "https://gitlab.com/superblocks/super-web3-provider#readme",
+  "devDependencies": {
+    "web3": "0.19",
+    "webpack": "^4.31.0",
+    "webpack-cli": "^3.3.2",
+    "typescript": "^3.5.1"
+  },
+  "dependencies": {
+    "socket.io": "^2.2.0"
+  }
+}
