@@ -135,7 +135,8 @@ export default class SuperblocksProvider {
     }
 
     private sendSocketMessage = (payload: IRPCPayload, networkVersion: any, callback: any) => {
-        const id = this.msgCounter++;
+        this.msgCounter += 1;
+        const id = this.msgCounter;
         const msg = { payload, id, networkVersion };
         this.pending[id] = callback;
         this.socket.emit('message', msg);
