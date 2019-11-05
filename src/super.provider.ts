@@ -124,7 +124,7 @@ export default class SuperblocksProvider {
         this.socket.emit('handshake', { id: this.SESSION_ID });
         this.socket.on('paired', () => {
             this.log('Socket connected');
-            this.socket.on('message', this.handleMessage);
+            this.socket.on('message', (msg: IMessage) => this.handleMessage(msg));
 
             this.log('Fetch addresses from Metamask');
             const payload = { jsonrpc: '2.0', id: 1, method: 'eth_accounts', params: <any>[] };
