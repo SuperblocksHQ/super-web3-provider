@@ -56,7 +56,7 @@ export default class SuperblocksProvider {
         this.init();
     }
 
-    public handleMessage = (msg: IMessage) => {
+    public handleMessage(msg: IMessage) {
         if (this.pending[msg.id]) {
             const cb = this.pending[msg.id];
             delete this.pending[msg.id];
@@ -68,10 +68,10 @@ export default class SuperblocksProvider {
         }
     }
 
-    public sendMessage = (payload: any, networkVersion: string, callback: any) => {
+    public sendMessage(payload: any, networkVersion: string, callback: any) {
         if (this.status === 'unconnected') {
             this.log('Waiting for connection...');
-            setTimeout( () => {
+            setTimeout(() => {
                 this.sendMessage(payload, networkVersion, callback);
             }, 1000);
             return;
@@ -85,31 +85,31 @@ export default class SuperblocksProvider {
         this.sendSocketMessage(payload, networkVersion, callback);
     }
 
-    public prepareRequest = (_async: any) => {
+    public prepareRequest(_async: any) {
         throw new Error('Not implemented.');
     }
 
-    public isConnected = () => {
+    public isConnected() {
         return this.status === 'connected';
     }
 
-    public send = (payload: any, callback: any) => {
+    public send(payload: any, callback: any) {
         this.sendAsync(payload, callback);
     }
 
-    public sendAsync = (payload: any, callback: any) => {
+    public sendAsync(payload: any, callback: any) {
         this.sendMessage(payload, this.networkVersion, callback);
     }
 
-    public getAddress = (index: number) => {
+    public getAddress(index: number) {
         return this.addresses[index];
     }
 
-    public getAddresses = () => {
+    public getAddresses() {
         return this.addresses;
     }
 
-    private init = () => {
+    private init() {
         this.networkVersion = null;
         this.options.proxyUrl = this.options.proxyUrl || this.DEFAULT_PROXY_URL;
 
@@ -134,7 +134,7 @@ export default class SuperblocksProvider {
         });
     }
 
-    private sendSocketMessage = (payload: IRPCPayload, networkVersion: any, callback: any) => {
+    private sendSocketMessage(payload: IRPCPayload, networkVersion: any, callback: any) {
         this.msgCounter += 1;
         const id = this.msgCounter;
         const msg = { payload, id, networkVersion };
@@ -142,7 +142,7 @@ export default class SuperblocksProvider {
         this.socket.emit('message', msg);
     }
 
-    private log = (msg: any) => {
+    private log(msg: any) {
         console.log('[SuperblocksProvider] ' + (msg !== null ? msg : '') );
     }
 }
