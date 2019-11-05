@@ -56,7 +56,7 @@ export default class SuperblocksProvider {
         this.init();
     }
 
-    public handleMessage(msg: IMessage) {
+    public handleMessage = (msg: IMessage) => {
         if (this.pending[msg.id]) {
             const cb = this.pending[msg.id];
             delete this.pending[msg.id];
@@ -109,7 +109,7 @@ export default class SuperblocksProvider {
         return this.addresses;
     }
 
-    private init() {
+    private init = () => {
         this.networkVersion = null;
         this.options.proxyUrl = this.options.proxyUrl || this.DEFAULT_PROXY_URL;
 
@@ -134,14 +134,14 @@ export default class SuperblocksProvider {
         });
     }
 
-    private sendSocketMessage(payload: IRPCPayload, networkVersion: any, callback: any) {
+    private sendSocketMessage = (payload: IRPCPayload, networkVersion: any, callback: any) => {
         const id = this.msgCounter++;
         const msg = { payload, id, networkVersion };
         this.pending[id] = callback;
         this.socket.emit('message', msg);
     }
 
-    private log(msg: any) {
+    private log = (msg: any) => {
         console.log('[SuperblocksProvider] ' + (msg !== null ? msg : '') );
     }
 }
