@@ -69,6 +69,8 @@ export default class SuperblocksProvider {
     }
 
     public async sendMessage(payload: IRPCPayload, networkId: string, callback: any) {
+        console.log(payload.method);
+
         if (payload.method === 'eth_sendTransaction' || payload.method === 'eth_sign') {
             const transaction = await superblocksClient.sendEthTransaction({
                 buildConfigId: this.BUILD_CONFIG_ID,
@@ -90,22 +92,23 @@ export default class SuperblocksProvider {
                 }
             });
          } else {
-             // Methods which are not to be intercepted or do not need any account information could be
-             // offloaded to Infura, Etherscan, custom Ethereum node or some other public node
-             try {
+            // Methods which are not to be intercepted or do not need any account information could be
+            // offloaded to Infura, Etherscan, custom Ethereum node or some other public node
+            try {
                 const response = await fetch(this.options.endpoint, {
                     body: JSON.stringify(payload),
-                    headers: {'content-type': 'application/json',
-                },
+                    headers: {
+                        'content-type': 'application/json',
+                    },
                     method: 'POST'
                 });
 
                 const data = await response.json();
                 callback(null, data);
-             } catch (error) {
+            } catch (error) {
                 callback(error, null);
-             }
-         }
+            }
+        }
     }
 
     public prepareRequest(_async: any) {
@@ -118,6 +121,14 @@ export default class SuperblocksProvider {
 
     public sendAsync(payload: any, callback: any) {
         this.sendMessage(payload, this.options.networkId, callback);
+    }
+
+    public getAddress(_index: number) {
+        return this.options.from;
+    }
+
+    public getAddresses() {
+        return [this.options.from];
     }
 
     private init() {
