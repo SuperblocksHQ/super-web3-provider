@@ -1,0 +1,24 @@
+{
+  "name": "reference-ethereum-project",
+  "version": "0.0.1",
+  "private": true,
+  "scripts": {
+    "build": "truffle compile",
+    "test": "truffle test"
+  },
+  "eslintConfig": {
+    "extends": "react-app"
+  },
+  "browserslist": [
+    ">0.2%",
+    "not dead",
+    "not ie <= 11",
+    "not op_mini all"
+  ],
+  "devDependencies": {
+    "truffle": "^5.0.30"
+  },
+  "dependencies": {
+    "super-web3-provider": "file:.."
+  }
+}

@@ -14,11 +14,15 @@
 // You should have received a copy of the GNU General Public License
 // along with Superblocks. If not, see <http://www.gnu.org/licenses/>.
 
-import io from 'socket.io-client';
+import fetch from 'node-fetch';
+import { connectToPusher, subscribeToChannel } from './pusher/pusher.client';
+import { superblocksClient } from './superblocks/superblocks.client';
+import { ITransactionModel } from './superblocks/models';
 
 interface IProviderOptions {
-    proxyUrl: string;
-    addresses: [string];
+    from: string;
+    endpoint: string;
+    networkId: string;
 }
 
 interface IMessage {
@@ -39,16 +43,12 @@ interface IRPCPayload {
 export default class SuperblocksProvider {
 
     // Pre-defined variable setup by the Superblocks CI when executing the job including the deployment process
-    private readonly SESSION_ID: string = process.env.SUPER_SESSION_ID;
-    private readonly DEFAULT_PROXY_URL: string = 'https://api.superblocks.com/v1/web3-hub/provider';
+    private readonly PROJECT_ID: string = process.env.PROJECT_ID;
+    private readonly BUILD_CONFIG_ID: string = process.env.BUILD_CONFIG_ID;
+    private readonly CI_JOB_ID: string = process.env.CI_JOB_ID;
 
-    private addresses: [string];
     private options: IProviderOptions;
     private pending: any = {};
-    private socket = io.Socket = {} as SocketIOClient.Socket;
-    private msgCounter = 0;
-    private status = 'unconnected';
-    private networkVersion: string;
 
     constructor(options: IProviderOptions) {
         this.options = options;
@@ -68,78 +68,58 @@ export default class SuperblocksProvider {
         }
     }
 
-    public sendMessage(payload: any, networkVersion: string, callback: any) {
-        if (this.status === 'unconnected') {
-            this.log('Waiting for connection...');
-            setTimeout(() => {
-                this.sendMessage(payload, networkVersion, callback);
-            }, 1000);
-            return;
-        }
-
+    public async sendMessage(payload: IRPCPayload, networkId: string, callback: any) {
         if (payload.method === 'eth_sendTransaction' || payload.method === 'eth_sign') {
-            console.log('Waiting for user to sign transaction with Metamask...');
-        }
+            console.log('PUTA');
+            const transaction = await superblocksClient.sendEthTransaction({
+                buildConfigId: this.BUILD_CONFIG_ID,
+                jobId: this.CI_JOB_ID,
+                projectId: this.PROJECT_ID,
+                networkId,
+                from: this.options.from,
+                rpcPayload: payload
+            });
 
-        // TODO: Add a timeout for responses so we can abort in a sane manner.
-        this.sendSocketMessage(payload, networkVersion, callback);
+            // We can only subscribe to the transaction on this precise moment, as otherwise we won't have the proper JobId mapped
+            subscribeToChannel(`web3-hub-${transaction.jobId}`, ['update_transaction'], (event) => {
+                if (event.eventName === 'update_transaction') {
+                    const txUpdated: ITransactionModel = event.message;
+                    console.log(txUpdated);
+
+                    // TODO - Proper error handling here
+                    callback(null, txUpdated.transactionDetails.hash);
+                }
+            });
+         } else {
+             // Methods which are not to be intercepted or do not need any account information could be
+             // offloaded to Infura, Etherscan, custom Ethereum node or some other public node
+             fetch(this.options.endpoint, {
+                    body: JSON.stringify(payload),
+                    headers: {'content-type': 'application/json',
+                },
+                method: 'POST'
+            }).then((response) => {
+                callback(null, response.body);
+            }).catch((error) => {
+                callback(error, null);
+            });
+         }
     }
 
     public prepareRequest(_async: any) {
         throw new Error('Not implemented.');
     }
 
-    public isConnected() {
-        return this.status === 'connected';
-    }
-
-    public send(payload: any, callback: any) {
+    public send(payload: IRPCPayload, callback: any) {
         this.sendAsync(payload, callback);
     }
 
     public sendAsync(payload: any, callback: any) {
-        this.sendMessage(payload, this.networkVersion, callback);
-    }
-
-    public getAddress(index: number) {
-        return this.addresses[index];
-    }
-
-    public getAddresses() {
-        return this.addresses;
+        this.sendMessage(payload, this.options.networkId, callback);
     }
 
     private init() {
-        this.networkVersion = null;
-        this.options.proxyUrl = this.options.proxyUrl || this.DEFAULT_PROXY_URL;
-
-        const { protocol, host, pathname } = new URL(this.options.proxyUrl);
-
-        // Socket.io uses namespaces instead of routes, so must manually specify route
-        this.socket = io(`${protocol}//${host}`, { path: pathname });
-        if (!this.socket) {
-            throw new Error('Could not instantiate socket.');
-        }
-
-        this.socket.emit('handshake', { id: this.SESSION_ID });
-        this.socket.on('paired', () => {
-            this.log('Socket connected');
-            this.socket.on('message', (msg: IMessage) => this.handleMessage(msg));
-
-            this.log('Fetch addresses from Metamask');
-            const payload = { jsonrpc: '2.0', id: 1, method: 'eth_accounts', params: <any>[] };
-            this.sendSocketMessage(payload, this.networkVersion, (_err: any, _res: any) => {
-                this.status = 'connected';
-            });
-        });
-    }
-
-    private sendSocketMessage(payload: IRPCPayload, networkVersion: any, callback: any) {
-        this.msgCounter += 1;
-        const id = this.msgCounter;
-        const msg = { payload, id, networkVersion };
-        this.pending[id] = callback;
-        this.socket.emit('message', msg);
+        connectToPusher();
     }
 
     private log(msg: any) {
