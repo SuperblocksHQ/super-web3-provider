@@ -15,7 +15,7 @@
 // along with Superblocks. If not, see <http://www.gnu.org/licenses/>.
 
 import fetch from 'node-fetch';
-import { connectToPusher, subscribeToChannel } from './pusher/pusher.client';
+import { connectToPusher, subscribeToChannel, unsubscribeFromChannel } from './pusher/pusher.client';
 import { superblocksClient } from './superblocks/superblocks.client';
 import { ITransactionModel } from './superblocks/models';
 
@@ -43,8 +43,8 @@ interface IRPCPayload {
 export default class SuperblocksProvider {
 
     // Pre-defined variable setup by the Superblocks CI when executing the job including the deployment process
-    private readonly PROJECT_ID: string = process.env.PROJECT_ID;
-    private readonly BUILD_CONFIG_ID: string = process.env.BUILD_CONFIG_ID;
+    private readonly PROJECT_ID: string = process.env.SUPER_PROJECT_ID;
+    private readonly BUILD_CONFIG_ID: string = process.env.SUPER_BUILD_CONFIG_ID;
     private readonly CI_JOB_ID: string = process.env.CI_JOB_ID;
 
     private options: IProviderOptions;
@@ -69,12 +69,16 @@ export default class SuperblocksProvider {
     }
 
     public async sendMessage(payload: IRPCPayload, networkId: string, callback: any) {
-        console.log(payload.method);
-
-        if (payload.method === 'eth_sendTransaction' || payload.method === 'eth_sign') {
+        if (payload.method === 'eth_accounts') {
+            callback(null, {
+                jsonrpc: payload.jsonrpc,
+                id: payload.id,
+                result: this.accounts
+            });
+        } else if (payload.method === 'eth_sendTransaction' || payload.method === 'eth_sign') {
             const transaction = await superblocksClient.sendEthTransaction({
                 buildConfigId: this.BUILD_CONFIG_ID,
-                jobId: this.CI_JOB_ID,
+                ciJobId: this.CI_JOB_ID,
                 projectId: this.PROJECT_ID,
                 networkId,
                 from: this.options.from,
@@ -85,10 +89,16 @@ export default class SuperblocksProvider {
             subscribeToChannel(`web3-hub-${transaction.jobId}`, ['update_transaction'], (event) => {
                 if (event.eventName === 'update_transaction') {
                     const txUpdated: ITransactionModel = event.message;
-                    console.log(txUpdated);
+
+                    // Unsubscribe immediately after receiving the receipt txHash
+                    unsubscribeFromChannel(`web3-hub-${transaction.jobId}`);
 
                     // TODO - Proper error handling here
-                    callback(null, txUpdated.transactionDetails.hash);
+                    callback(null, {
+                        jsonrpc: payload.jsonrpc,
+                        id: payload.id,
+                        result: txUpdated.transactionHash
+                    });
                 }
             });
          } else {
@@ -123,11 +133,11 @@ export default class SuperblocksProvider {
         this.sendMessage(payload, this.options.networkId, callback);
     }
 
-    public getAddress(_index: number) {
-        return this.options.from;
+    public getAddress(index: number) {
+        return this.accounts[index];
     }
 
-    public getAddresses() {
+    get accounts() {
         return [this.options.from];
     }
 

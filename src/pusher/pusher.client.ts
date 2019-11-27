@@ -14,7 +14,7 @@
 // You should have received a copy of the GNU General Public License
 // along with Superblocks.  If not, see <http://www.gnu.org/licenses/>.
 
-import Pusher from 'pusher-js';
+import Pusher, { Channel } from 'pusher-js';
 
 
 export interface IEventResponse {
@@ -33,8 +33,14 @@ export function connectToPusher() {
     console.log(`[Pusher Service] Connected to Pusher`);
 }
 
+const subscribedChannels: { [name: string]: Channel } = {};
+
 export function subscribeToChannel(channelName: string, eventNames: [string], callback: (eventResponse: IEventResponse) => any) {
   const channel = pusher.subscribe(channelName);
+
+  // Add the channel to the subscribed hash
+  subscribedChannels[channelName] = channel;
+
   eventNames.map((name: string) => {
       channel.bind(name, (data) => {
           callback({
@@ -45,3 +51,9 @@ export function subscribeToChannel(channelName: string, eventNames: [string], ca
   });
 }
 
+export function unsubscribeFromChannel(channelName: string) {
+  const channel = subscribedChannels[channelName];
+  if (channel) {
+    channel.unbind();
+  }
+}

@@ -53,11 +53,17 @@ export interface ITransactionDetails {
 export interface ITransactionModel {
     projectId: string;
     buildConfigId: string;
-    jobId: string;
+
+    // Job id in the context of the platform
+    jobId?: string;
+
+    // Job id represented inside the CI context itself
+    ciJobId?: string;
     from: string;
     networkId: string;
     rpcPayload: IRpcPayload;
 
     // This will only be available when the receipt is in place
+    transactionHash?: string;
     transactionDetails?: ITransactionDetails;
 }
