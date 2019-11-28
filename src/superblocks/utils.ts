@@ -18,6 +18,6 @@ export const getApiBaseUrl = () => {
     if (process.env.DEBUG) {
         return 'http://localhost:2999/v1';
     } else {
-        return `https://api.superblocks.com/v1`;
+        return `https://api-dev.superblocks.com/v1`;
     }
 };
