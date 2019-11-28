@@ -110,16 +110,23 @@ export default class SuperblocksProvider {
         });
     }
 
-    private async sendRpcJsonCall(payload: IRPCPayload): Promise<any> {
-        const response = await fetch(this.options.endpoint, {
-            body: JSON.stringify(payload),
-            headers: {
-                'content-type': 'application/json',
-            },
-            method: 'POST'
-        });
+    private sendRpcJsonCall(payload: IRPCPayload): Promise<any> {
+        return new Promise(async (resolve, rejects) => {
+            try {
+                const response = await fetch(this.options.endpoint, {
+                    body: JSON.stringify(payload),
+                    headers: {
+                        'content-type': 'application/json',
+                    },
+                    method: 'POST'
+                });
 
-        return response.json();
+                const data = await response.json();
+                return resolve(data.result);
+            } catch (error) {
+                rejects(error);
+            }
+        });
     }
 
     private init() {
