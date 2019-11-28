@@ -25,14 +25,6 @@ interface IProviderOptions {
     networkId: string;
 }
 
-interface IMessage {
-    id: string;
-    payload: {
-        err: any;
-        res: any;
-    };
-}
-
 interface IRPCPayload {
     jsonrpc: string;
     id: number;
