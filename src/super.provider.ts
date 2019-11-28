@@ -38,6 +38,7 @@ interface IRPCPayload {
     id: number;
     method: string;
     params: [any];
+    result?: any;
 }
 
 export default class SuperblocksProvider {
@@ -56,59 +57,15 @@ export default class SuperblocksProvider {
     }
 
     public async sendMessage(payload: IRPCPayload, networkId: string): Promise<any> {
-        return new Promise(async (resolve, rejects) => {
-            if (payload.method === 'eth_accounts') {
-                resolve({
-                    jsonrpc: payload.jsonrpc,
-                    id: payload.id,
-                    result: [this.options.from]
-                });
-            } else if (payload.method === 'eth_sendTransaction' || payload.method === 'eth_sign') {
-                const transaction = await superblocksClient.sendEthTransaction({
-                    buildConfigId: this.BUILD_CONFIG_ID,
-                    ciJobId: this.CI_JOB_ID,
-                    projectId: this.PROJECT_ID,
-                    networkId,
-                    from: this.options.from,
-                    rpcPayload: payload
-                });
-
-                // We can only subscribe to the transaction on this precise moment, as otherwise we won't have the proper JobId mapped
-                subscribeToChannel(`web3-hub-${transaction.jobId}`, ['update_transaction'], (event) => {
-                    if (event.eventName === 'update_transaction') {
-                        const txUpdated: ITransactionModel = event.message;
-
-                        // TODO - Is his actually the right thing to do?
-                        // Unsubscribe immediately after receiving the receipt txHash
-                        unsubscribeFromChannel(`web3-hub-${transaction.jobId}`);
-
-                        // TODO - Proper error handling here
-                        resolve({
-                            jsonrpc: payload.jsonrpc,
-                            id: payload.id,
-                            result: txUpdated.transactionHash
-                        });
-                    }
-                });
-             } else {
-                // Methods which are not to be intercepted or do not need any account information could be
-                // offloaded to Infura, Etherscan, custom Ethereum node or some other public node
-                try {
-                    const response = await fetch(this.options.endpoint, {
-                        body: JSON.stringify(payload),
-                        headers: {
-                            'content-type': 'application/json',
-                        },
-                        method: 'POST'
-                    });
-
-                    const data = await response.json();
-                    resolve(data);
-                } catch (error) {
-                    rejects(error);
-                }
-            }
-        });
+        if (payload.method === 'eth_accounts') {
+            return this.getAccounts();
+        } else if (payload.method === 'eth_sendTransaction' || payload.method === 'eth_sign') {
+            return this.sendRestApiCall(payload, networkId);
+         } else {
+            // Methods which are not to be intercepted or do not need any account information could be
+            // offloaded to Infura, Etherscan, custom Ethereum node or some other public node
+            return this.sendRpcJsonCall(payload);
+        }
     }
 
     public send(payload: IRPCPayload): Promise<any> {
@@ -117,8 +74,60 @@ export default class SuperblocksProvider {
 
     public sendAsync(payload: IRPCPayload, callback: (error: any, result: any) => void): void {
         this.sendMessage(payload, this.options.networkId)
-            .then((result) => callback(null, result))
-            .catch((error) => callback(error, null));
+            .then((result) => {
+                const response = payload;
+                response.result = result;
+                callback(null, response);
+            })
+            .catch((error) => {
+                callback(error, null);
+                console.error(`Error from EthereumProvider sendAsync ${payload}: ${error}`);
+            });
+    }
+
+    private getAccounts(): Promise<any> {
+        return new Promise((resolve) => {
+            resolve([this.options.from]);
+        });
+    }
+
+    private async sendRestApiCall(payload: IRPCPayload, networkId: string): Promise<any> {
+        return new Promise(async (resolve) => {
+            const transaction = await superblocksClient.sendEthTransaction({
+                buildConfigId: this.BUILD_CONFIG_ID,
+                ciJobId: this.CI_JOB_ID,
+                projectId: this.PROJECT_ID,
+                networkId,
+                from: this.options.from,
+                rpcPayload: payload
+            });
+
+            // We can only subscribe to the transaction on this precise moment, as otherwise we won't have the proper JobId mapped
+            subscribeToChannel(`web3-hub-${transaction.jobId}`, ['update_transaction'], (event) => {
+                if (event.eventName === 'update_transaction') {
+                    const txUpdated: ITransactionModel = event.message;
+
+                    // TODO - Is his actually the right thing to do?
+                    // Unsubscribe immediately after receiving the receipt txHash
+                    unsubscribeFromChannel(`web3-hub-${transaction.jobId}`);
+
+                    // TODO - Proper error handling here
+                    resolve(txUpdated.transactionHash);
+                }
+            });
+        });
+    }
+
+    private async sendRpcJsonCall(payload: IRPCPayload): Promise<any> {
+        const response = await fetch(this.options.endpoint, {
+            body: JSON.stringify(payload),
+            headers: {
+                'content-type': 'application/json',
+            },
+            method: 'POST'
+        });
+
+        return response.json();
     }
 
     private init() {
