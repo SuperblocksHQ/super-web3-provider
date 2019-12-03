@@ -44,6 +44,7 @@ export default class SuperblocksProvider {
 
     constructor(options: IProviderOptions) {
         this.options = options;
+        this.pendingTxs = new Map();
 
         this.init();
     }
