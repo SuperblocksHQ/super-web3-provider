@@ -39,8 +39,8 @@ export default class SuperblocksProvider {
     private readonly PROJECT_ID: string = process.env.SUPER_PROJECT_ID;
     private readonly BUILD_CONFIG_ID: string = process.env.SUPER_BUILD_CONFIG_ID;
     private readonly CI_JOB_ID: string = process.env.CI_JOB_ID;
-
     private options: IProviderOptions;
+    private pendingTxs: Map<string, ITransactionModel>;
 
     constructor(options: IProviderOptions) {
         this.options = options;
@@ -94,17 +94,23 @@ export default class SuperblocksProvider {
                 rpcPayload: payload
             });
 
+            this.pendingTxs.set(transaction.id, transaction);
+
             // We can only subscribe to the transaction on this precise moment, as otherwise we won't have the proper JobId mapped
             subscribeToChannel(`web3-hub-${transaction.jobId}`, ['update_transaction'], (event) => {
                 if (event.eventName === 'update_transaction') {
                     const txUpdated: ITransactionModel = event.message;
 
-                    // TODO - Is his actually the right thing to do?
-                    // Unsubscribe immediately after receiving the receipt txHash
-                    unsubscribeFromChannel(`web3-hub-${transaction.jobId}`);
+                    if (this.pendingTxs.get(txUpdated.id)) {
+                        // TODO - Is his actually the right thing to do?
+                        // Unsubscribe immediately after receiving the receipt txHash
+                        unsubscribeFromChannel(`web3-hub-${transaction.jobId}`);
 
-                    // TODO - Proper error handling here
-                    resolve(txUpdated.transactionHash);
+                        this.pendingTxs.delete(txUpdated.id);
+
+                        // TODO - Proper error handling here
+                        resolve(txUpdated.transactionHash);
+                    }
                 }
             });
         });

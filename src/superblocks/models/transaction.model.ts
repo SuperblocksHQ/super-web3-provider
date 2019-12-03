@@ -51,6 +51,7 @@ export interface ITransactionDetails {
 }
 
 export interface ITransactionModel {
+    id?: string;
     projectId: string;
     buildConfigId: string;
 
