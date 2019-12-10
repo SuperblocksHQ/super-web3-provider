@@ -7,7 +7,7 @@
   "scripts": {
     "build": "tsc",
     "publish-lib": "node publish.js",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "mocha --require ts-node/register --exit src/**/*spec.ts src/*spec.ts"
   },
   "repository": {
     "type": "git",
@@ -20,9 +20,12 @@
   },
   "homepage": "https://gitlab.com/superblocks/super-web3-provider#readme",
   "devDependencies": {
+    "@types/mocha": "^5.2.7",
     "@types/node": "^12.12.5",
     "@types/node-fetch": "^2.5.3",
     "@types/pusher-js": "^4.2.2",
+    "mocha": "^6.2.2",
+    "ts-node": "^8.5.4",
     "typescript": "^3.5.1",
     "webpack": "^4.31.0",
     "webpack-cli": "^3.3.2"
