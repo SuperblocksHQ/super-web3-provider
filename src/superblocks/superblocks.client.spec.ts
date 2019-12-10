@@ -14,13 +14,22 @@
 // You should have received a copy of the GNU General Public License
 // along with Superblocks.  If not, see <http://www.gnu.org/licenses/>.
 
+// import sinon from 'sinon';
+import * as sinon from 'ts-sinon';
 import { superblocksClient } from './superblocks.client';
 import * as assert from 'assert';
 
-describe('sendEthTransaction', function () {
+describe('sendEthTransaction', function() {
+    beforeEach(() => {
+        sinon.default.stub(fetch).returns(Promise.resolve({
+            text: new Promise((resolve) => resolve('request to http://localhost:2999/v1/transactions failed, reason: connect ECONNREFUSED 127.0.0.1:2999'))
+        }));
+    });
+
     this.timeout(10000);
 
     it.skip('sends Ethereum Transaction', () => {
+        // TODO
     });
 
     it('fails to send request to inaccessible API address', async () => {
@@ -41,7 +50,7 @@ describe('sendEthTransaction', function () {
                         params: ['parameters']
                     },
                 });
-            } catch(e) {
+            } catch (e) {
                 throw e;
             }
         }, {
@@ -69,7 +78,7 @@ describe('sendEthTransaction', function () {
                         params: ['parameters']
                     },
                 });
-            } catch(e) {
+            } catch (e) {
                 throw e;
             }
         }, {

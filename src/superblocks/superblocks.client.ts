@@ -13,9 +13,9 @@
 //
 // You should have received a copy of the GNU General Public License
 // along with Superblocks.  If not, see <http://www.gnu.org/licenses/>.
-import fetch from 'node-fetch';
+// import fetch from 'node-fetch';
 import { ITransactionModel } from './models';
-import { getApiBaseUrl } from './utils';
+// import { getApiBaseUrl } from './utils';
 
 /**
  * Communication client for Superblocks API.
@@ -24,7 +24,7 @@ export interface ISuperblocksClient {
     sendEthTransaction(transaction: ITransactionModel): Promise<ITransactionModel>;
 }
 
-export const superblocksClient: ISuperblocksClient = {
+export const superblocksClient = (fetch: any, getApiBaseUrl: any) => <ISuperblocksClient>{
 
     async sendEthTransaction(transaction: ITransactionModel): Promise<ITransactionModel> {
         console.log(`${getApiBaseUrl()}/transactions`);
