@@ -14,19 +14,35 @@
 // You should have received a copy of the GNU General Public License
 // along with Superblocks.  If not, see <http://www.gnu.org/licenses/>.
 
-// import sinon from 'sinon';
+import 'reflect-metadata';
 import * as sinon from 'ts-sinon';
-import { superblocksClient } from './superblocks.client';
 import * as assert from 'assert';
+import { SuperblocksClient } from './superblocks.client';
+import { ISuperblocksClient, Fetch, ISuperblocksUtils } from '../ioc/interfaces';
+import { Container, ContainerModule } from 'inversify';
+import { TYPES } from '../ioc/types';
 
-describe('sendEthTransaction', function() {
+let superblocksClient: ISuperblocksClient;
+
+describe('sendEthTransaction', () => {
+
     beforeEach(() => {
-        sinon.default.stub(fetch).returns(Promise.resolve({
-            text: new Promise((resolve) => resolve('request to http://localhost:2999/v1/transactions failed, reason: connect ECONNREFUSED 127.0.0.1:2999'))
-        }));
-    });
+        const mockFetch = sinon.stubInterface<Fetch>(() => Promise.reject('request to http://localhost:2999/v1/transactions failed, reason: connect ECONNREFUSED 127.0.0.1:2999'));
+        const mockUtils = sinon.stubInterface<ISuperblocksUtils>({ getApiBaseUrl: 'https://some-url'});
 
-    this.timeout(10000);
+        const container = new Container();
+        const thirdPartyDependencies = new ContainerModule((bind) => {
+            bind<Fetch>(TYPES.Fetch).toConstantValue(mockFetch);
+        });
+
+        const applicationDependencies = new ContainerModule((bind) => {
+            bind<ISuperblocksClient>(TYPES.SuperblocksClient).to(SuperblocksClient).inSingletonScope();
+            bind<ISuperblocksUtils>(TYPES.SuperblocksUtils).toConstantValue(mockUtils);
+        });
+
+        container.load(thirdPartyDependencies, applicationDependencies);
+        superblocksClient = container.get<ISuperblocksClient>(TYPES.SuperblocksClient);
+    });
 
     it.skip('sends Ethereum Transaction', () => {
         // TODO

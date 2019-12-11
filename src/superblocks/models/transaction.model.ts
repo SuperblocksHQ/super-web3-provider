@@ -19,6 +19,7 @@ export interface IRpcPayload {
     id: number;
     method: string;
     params: [any];
+    result?: any;
 }
 
 

@@ -32,7 +32,9 @@
     "webpack-cli": "^3.3.2"
   },
   "dependencies": {
+    "inversify": "^5.0.1",
     "node-fetch": "^2.6.0",
-    "pusher-js": "5.0.2 "
+    "pusher-js": "5.0.2 ",
+    "reflect-metadata": "^0.1.13"
   }
 }
