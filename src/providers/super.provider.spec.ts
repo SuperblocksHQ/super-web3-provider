@@ -106,8 +106,7 @@ describe('ManualSignProvider:', () => {
         // TODO
     });
 
-    it('fails to send asynchronous message via provider interface due to invalid JSON response', (done) => {
-        done();
+    it('fails to send asynchronous message via provider interface due to invalid JSON response', () => {
         // const superblocksProvider = new ManualSignProvider({
         //     from: '0x0101010100101010100101010100101010101010',
         //     endpoint: 'https://superblocks.com/',
