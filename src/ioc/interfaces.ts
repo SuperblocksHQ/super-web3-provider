@@ -1,8 +1,8 @@
-import * as fetch from 'node-fetch';
+import fetch from 'node-fetch';
 import pusher from 'pusher-js';
 import { ITransactionModel, IRpcPayload } from '../superblocks/models';
 
-export type Fetch = typeof fetch.default;
+export type Fetch = typeof fetch.prototype;
 export type Pusher = typeof pusher.prototype;
 
 export interface ISuperblocksUtils {

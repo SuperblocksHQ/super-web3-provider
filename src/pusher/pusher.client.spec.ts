@@ -15,109 +15,57 @@
 // along with Superblocks.  If not, see <http://www.gnu.org/licenses/>.
 
 import 'reflect-metadata';
-import * as sinon from 'ts-sinon';
 import * as assert from 'assert';
+import * as sinon from 'ts-sinon';
 import { IPusherClient, IEventResponse, Pusher } from '../ioc/interfaces';
 import { TYPES } from '../ioc/types';
-// import { Container, ContainerModule } from 'inversify';
-// import { PusherClient } from './pusher.client';
-// import { Channel } from 'pusher-js';
 import { container } from '../ioc/ioc.config';
-
-// Mock Channel class used by Pusher
-// class ChannelMock implements Channel {
-//     name: string;
-//     pusher: Pusher.Pusher;
-//     subscribed: boolean;
-
-//     emit(eventName: string, data?: any): any {
-//         (eventName);
-//         (data);
-//     }
-
-//     authorize(socketId : string, callback: Function) {
-//         (socketId);
-//         callback();
-//     }
-
-//     trigger(event : string, data : any): boolean {
-//         (event);
-//         (data);
-//         return false;
-//     }
-
-//     bind(eventName: string, callback: EventCallback, context?: any): any {
-//         (eventName);
-//         callback(context, null);
-//     }
-
-//     unbind(eventName?: string, callback?: Function, context?: any): any {
-//         (eventName);
-//         (context);
-//         (callback);
-//     }
-
-//     bind_global(callback: Function): any {
-//         callback();
-//     }
-
-//     unbind_global(callback?: Function): any {
-//         (callback);
-//     }
-
-//     unbind_all(callback?: Function): any {
-//         (callback);
-//     }
-// }
-
-// // Mock Pusher client class
-// class PusherMock extends Pusher{
-//     subscribe(channelName: string): Channel {
-//         (channelName);
-//         return new ChannelMock();
-//     }
-// };
-
-// let mockChannel: Channel;
-
-// let mockPusher: Pusher.Pusher;
+import { EventCallback } from 'pusher-js';
 
 let pusherClient: IPusherClient;
 
-// // Create the necessary mocks to cover func dependencies
-// mockChannel = sinon.stubInterface<Pusher.Channel>({
-//     bind(_eventName: string, callback: EventCallback, context?: any): any {
+// Create the necessary mocks to cover func dependencies
+// const mockChannel = sinon.stubInterface<Pusher.Channel>({
+//     bind(_eventName: string, callback: EventCallback, context?: any): any => {
+//         console.log('PUTTAAAAA');
 //         callback(context, 'Some Data');
-//     },
+//         return mockChannel;
+//     })
 // });
-// mockPusher = sinon.stubInterface<Pusher.Pusher>({ subscribe: (_channelName: string) => {
-//     console.log('patata');
-//     return mockChannel;
-// }});
+// const mockChannel = Partial<Pusher.Channel> {
+//     bind: (_eventName: string, callback: EventCallback, context?: any): any => {
+//         callback(context, 'Some Data');
+//     }
+// };
 
-// // Setup all DI to satisfy the test suite dependencies
-// let container = new Container();
-// let thirdPartyDependencies = new ContainerModule((bind) => {
-//     bind<Pusher>(TYPES.Pusher).toConstantValue(mockPusher);
-// });
+const mockChannel = <Pusher.Channel> {
+    bind(_eventName: string, callback: EventCallback, context?: any): any {
+        callback(context, 'Some Data');
+    },
 
-// let applicationDependencies = new ContainerModule((bind) => {
-//     bind<IPusherClient>(TYPES.PusherClient).to(PusherClient).inSingletonScope();
-// });
+    unbind(_eventName: string, callback: EventCallback, context?: any): any {
+        callback(context, 'Some Data');
+    },
+};
 
-// container.load(thirdPartyDependencies, applicationDependencies);
+const mockPusher = <Pusher.Pusher> {
+    subscribe: (_channelName: string) => {
+        return mockChannel;
+    }
+};
 
-describe('connectToPusher', () => {
-    const pusher = container.get<Pusher>(TYPES.Pusher);
-    let subscribeStub = sinon.stubInterface<Pusher>();
-
+describe('PusherClient: Test connectToPusher', () => {
     beforeEach(() => {
-        // subscribeStub = sinon.stubInterface<Pusher>({
-        //     subscribe: () => console.log('patata')
-        // });
-        subscribeStub = sinon.stubInterface<Pusher>(pusher);
-        subscribeStub.subscribe.returns(() => console.log('patata'));
-        pusherClient = container.get<IPusherClient>(TYPES.PusherClient);
+        // create a snapshot so each unit test can modify
+        // it without breaking other unit tests
+        container.snapshot();
+    });
+
+    afterEach(() => {
+
+        // Restore to last snapshot so each unit test
+        // takes a clean copy of the application container
+        container.restore();
     });
 
     it.skip('fails to create valid Pusher object due to bad identification key', () => {
@@ -129,28 +77,28 @@ describe('connectToPusher', () => {
     });
 });
 
-describe('subscribeToChannel', () => {
+describe('PusherClient: Test subscribeToChannel', () => {
+
     beforeEach(() => {
+        container.snapshot();
+
+        container.rebind<Pusher>(TYPES.Pusher).toConstantValue(mockPusher);
         pusherClient = container.get<IPusherClient>(TYPES.PusherClient);
+    });
+
+    afterEach(() => {
+
+        // Restore to last snapshot so each unit test
+        // takes a clean copy of the application container
+        container.restore();
     });
 
     it.skip('checks subscribed channels data is empty at the start', () => {
         // TODO
     });
 
-    it('fails to subscribe to channel due to disconnected pusher object', () => {
-        assert.throws( () => {
-            pusherClient.subscribeToChannel('test-fail-to-subscribe-channel', ['test-fail-to-subscribe-event'], (eventResponse: IEventResponse) => {
-                assert.fail('fail to subscribe callback: ', eventResponse);
-            });
-        }, {
-            name: 'TypeError',
-            message: 'Cannot read property \'subscribe\' of undefined'
-        });
-    });
-
     it('subscribes to channel', (done) => {
-        assert.doesNotThrow( () => {
+        assert.doesNotThrow(() => {
             pusherClient.subscribeToChannel('test-channel', ['test_event'],
                 (eventResponse: IEventResponse) => {
                     assert.deepStrictEqual(eventResponse.eventName, 'test_event');
@@ -173,37 +121,42 @@ describe('subscribeToChannel', () => {
         // TODO
     });
 
-    it('checks subscriptions only map to specified entry in eventNames', (_done) => {
+    it('checks subscriptions only map to specified entry in eventNames', (done) => {
+        // Lets clear take a clean copy of the application container
+        container.restore();
+        container.snapshot();
+
         // Keep track of calls to channel bind method
-        // let bindCount = 0;
+        let bindCount = 0;
+        const modifiedMockChannel = <Pusher.Channel> {
+            bind(_eventName: string, callback: EventCallback, context?: any): any {
+                bindCount++;
+                callback(context, 'Some Data');
+            },
+        };
 
-        // mockChannel = sinon.stubInterface<Pusher.Channel>({ bind: () => { bindCount++; }});
-        // const modifiedMockPusher = sinon.stubInterface<Pusher.Pusher>({ subscribe: mockChannel });
+        const modifiedMockPusher = <Pusher.Pusher> {
+            subscribe: (_channelName: string) => {
+                return modifiedMockChannel;
+            }
+        };
 
-        // container = new Container();
-        // thirdPartyDependencies = new ContainerModule((bind) => {
-        //     bind<Pusher>(TYPES.Pusher).toConstantValue(modifiedMockPusher);
-        // });
+        container.rebind<Pusher>(TYPES.Pusher).toConstantValue(modifiedMockPusher);
+        pusherClient = container.get<IPusherClient>(TYPES.PusherClient);
 
-        // applicationDependencies = new ContainerModule((bind) => {
-        //     bind<IPusherClient>(TYPES.PusherClient).to(PusherClient).inSingletonScope();
-        // });
-
-        // container.load(thirdPartyDependencies, applicationDependencies);
-        // pusherClient = container.get<IPusherClient>(TYPES.PusherClient);
-
-        // let currentBindCount = 0;
-        // assert.doesNotThrow( () => {
-        //     pusherClient.subscribeToChannel('test-channel', ['entry'],
-        //         (eventResponse: IEventResponse) => {
-        //             currentBindCount++;
-        //             assert.notDeepStrictEqual(eventResponse, undefined);
-        //             console.log(bindCount + '\n\n\n\n\n\n\n\n\n\n\n\n\n');
-        //             assert.deepStrictEqual(currentBindCount, bindCount);
-        //             done();
-        //         }
-        //     );
-        // });
+        let currentBindCount = 0;
+        assert.doesNotThrow(() => {
+            pusherClient.subscribeToChannel('test-channel', ['entry'],
+                (eventResponse: IEventResponse) => {
+                    currentBindCount++;
+                    console.log(currentBindCount);
+                    console.log(bindCount);
+                    assert.notDeepStrictEqual(eventResponse, undefined);
+                    assert.deepStrictEqual(currentBindCount, bindCount);
+                    done();
+                }
+            );
+        });
     });
 
     it.skip('checks subscriptions do not link to unspecified eventNames', () => {
@@ -215,9 +168,19 @@ describe('subscribeToChannel', () => {
     });
 });
 
-describe('unsubscribeFromChannel', () => {
+describe('PusherClient: Test unsubscribeFromChannel', () => {
     beforeEach(() => {
+        container.snapshot();
+
+        container.rebind<Pusher>(TYPES.Pusher).toConstantValue(mockPusher);
         pusherClient = container.get<IPusherClient>(TYPES.PusherClient);
+    });
+
+    afterEach(() => {
+
+        // Restore to last snapshot so each unit test
+        // takes a clean copy of the application container
+        container.restore();
     });
 
     it('successfully unsubscribes from previously subscribed channelName', (done) => {
@@ -230,6 +193,9 @@ describe('unsubscribeFromChannel', () => {
                 }
             );
         });
+
+        const spy = sinon.default.spy(mockChannel, 'unbind');
+        sinon.default.assert.calledOnce(spy);
 
         assert.doesNotThrow( () => {
             pusherClient.unsubscribeFromChannel('test-channel');
@@ -246,21 +212,3 @@ describe('unsubscribeFromChannel', () => {
         });
     });
 });
-
-
-// // Modify Channel class used by Pusher to keep track of calls to bind method
-        // class ChannelMockModifiedBind extends ChannelMock {
-        //     bind(eventName: string, callback: EventCallback, context?: any): any {
-        //         (eventName);
-        //         bindCount++;
-        //         callback(context, null);
-        //     }
-        // }
-
-        // // Modify Pusher client to use the modified Channel class
-        // class PusherMockModifiedBind extends PusherMock {
-        //     subscribe(channelName: string): Channel {
-        //         (channelName);
-        //         return new ChannelMockModifiedBind();
-        //     }
-        // };

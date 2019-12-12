@@ -17,89 +17,68 @@
 import 'reflect-metadata';
 import * as sinon from 'ts-sinon';
 import * as assert from 'assert';
-import { SuperblocksClient } from './superblocks.client';
+import fetchMock, { MockResponse } from 'fetch-mock';
 import { ISuperblocksClient, Fetch, ISuperblocksUtils } from '../ioc/interfaces';
-import { Container, ContainerModule } from 'inversify';
 import { TYPES } from '../ioc/types';
+import { container } from '../ioc/ioc.config';
+import { ITransactionModel } from './models';
+import { SinonSandbox } from 'sinon';
 
-let superblocksClient: ISuperblocksClient;
+describe('SuperblocksClient: Test sendEthTransaction', () => {
 
-describe('sendEthTransaction', () => {
+    let superblocksClient: ISuperblocksClient;
+    let sandbox: SinonSandbox;
+
+    const tx = <ITransactionModel> {
+        buildConfigId: '1',
+        ciJobId: '2',
+        projectId: '3',
+        networkId: '4',
+        from: '0x5678900000000000000000000000000000004321',
+        rpcPayload: {
+            jsonrpc: 'data',
+            id: 0,
+            method: 'eth_sendTransaction',
+            params: ['parameters']
+        },
+    };
 
     beforeEach(() => {
-        const mockFetch = sinon.stubInterface<Fetch>(() => Promise.reject('request to http://localhost:2999/v1/transactions failed, reason: connect ECONNREFUSED 127.0.0.1:2999'));
+        // Remove console logs to make the test results cleaner
+        sandbox = sinon.default.createSandbox();
+        sandbox.stub(console, 'log');
+
+        container.snapshot();
         const mockUtils = sinon.stubInterface<ISuperblocksUtils>({ getApiBaseUrl: 'https://some-url'});
+        container.rebind<ISuperblocksUtils>(TYPES.SuperblocksUtils).toConstantValue(mockUtils);
+    });
 
-        const container = new Container();
-        const thirdPartyDependencies = new ContainerModule((bind) => {
-            bind<Fetch>(TYPES.Fetch).toConstantValue(mockFetch);
-        });
-
-        const applicationDependencies = new ContainerModule((bind) => {
-            bind<ISuperblocksClient>(TYPES.SuperblocksClient).to(SuperblocksClient).inSingletonScope();
-            bind<ISuperblocksUtils>(TYPES.SuperblocksUtils).toConstantValue(mockUtils);
-        });
-
-        container.load(thirdPartyDependencies, applicationDependencies);
-        superblocksClient = container.get<ISuperblocksClient>(TYPES.SuperblocksClient);
+    afterEach(() => {
+        container.restore();
+        sandbox.restore();
     });
 
     it.skip('sends Ethereum Transaction', () => {
-        // TODO
+        const mockFetch = fetchMock.sandbox().post('https://some-url/transactions', <MockResponse>{ status: 202, body: tx });
+        container.rebind<Fetch>(TYPES.Fetch).toConstantValue(mockFetch);
+        superblocksClient = container.get<ISuperblocksClient>(TYPES.SuperblocksClient);
+
+        let txResponse: ITransactionModel;
+        assert.doesNotThrow(async () => {
+            txResponse = await superblocksClient.sendEthTransaction(tx);
+        });
+        assert.deepStrictEqual(txResponse, tx);
     });
 
     it('fails to send request to inaccessible API address', async () => {
-        // Set debug mode so that the API endpoint is set to localhost
-        process.env.DEBUG = '*';
-        await assert.rejects( async () => {
-            try {
-                await superblocksClient.sendEthTransaction({
-                    buildConfigId: '1',
-                    ciJobId: '2',
-                    projectId: '3',
-                    networkId: '4',
-                    from: '0x5678900000000000000000000000000000004321',
-                    rpcPayload: {
-                        jsonrpc: 'data',
-                        id: 0,
-                        method: 'eth_sendTransaction',
-                        params: ['parameters']
-                    },
-                });
-            } catch (e) {
-                throw e;
-            }
-        }, {
-            name: 'FetchError',
-            message: 'request to http://localhost:2999/v1/transactions failed, reason: connect ECONNREFUSED 127.0.0.1:2999'
-        });
+        const mockFetch = fetchMock.sandbox().post('https://some-url/transactions', <MockResponse>{ status: 201, body: tx });
+        container.rebind<Fetch>(TYPES.Fetch).toConstantValue(mockFetch);
+        superblocksClient = container.get<ISuperblocksClient>(TYPES.SuperblocksClient);
 
-        // Removes previously set environment variable
-        delete process.env.DEBUG;
-    });
-
-    it('fails to send request to remote service due to invalid parameters', async () => {
-        await assert.rejects( async () => {
-            try {
-                await superblocksClient.sendEthTransaction({
-                    buildConfigId: '1',
-                    ciJobId: '2',
-                    projectId: '3',
-                    networkId: '4',
-                    from: '0x5678900000000000000000000000000000004321',
-                    rpcPayload: {
-                        jsonrpc: 'data',
-                        id: 0,
-                        method: 'eth_sendTransaction',
-                        params: ['parameters']
-                    },
-                });
-            } catch (e) {
-                throw e;
-            }
-        }, {
-            name: 'Error',
-            message: '[Superblocks client] cannot create send transaction to the web3 hub'
-        });
+        try {
+            await superblocksClient.sendEthTransaction(tx);
+        } catch (e) {
+            assert.equal(e.message, '[Superblocks client] cannot create send transaction to the web3 hub');
+        }
     });
 });
