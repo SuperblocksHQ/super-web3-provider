@@ -5,7 +5,7 @@
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {
-    "build": "tsc",
+    "build": "rm -rf dist && tsc",
     "publish-lib": "node publish.js",
     "test": "mocha --require ts-node/register --exit src/**/*spec.ts src/*spec.ts"
   },
