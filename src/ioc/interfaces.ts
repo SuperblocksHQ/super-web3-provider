@@ -11,6 +11,11 @@ export interface ISuperblocksUtils {
 
 export interface ISuperblocksClient {
     sendEthTransaction(transaction: ITransactionModel): Promise<ITransactionModel>;
+    createRelease(workspaceId: string, userToken: string, networkId: string): Promise<ITransactionModel>;
+}
+
+export interface IRpcClient {
+    sendRpcJsonCall(endpoint: string, payload: IRpcPayload): Promise<any>;
 }
 
 export interface IManualSignProviderOptions {

@@ -4,7 +4,8 @@ const TYPES = {
     ManualSigningProvider: Symbol.for('ManualSigningProvider'),
     SuperblocksClient: Symbol.for('SuperblocksClient'),
     SuperblocksUtils: Symbol.for('SuperblocksUtils'),
-    PusherClient: Symbol.for('PusherClient')
+    PusherClient: Symbol.for('PusherClient'),
+    RpcClient: Symbol.for('RpcClient')
 };
 
 export { TYPES };

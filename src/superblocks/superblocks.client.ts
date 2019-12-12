@@ -33,7 +33,6 @@ export class SuperblocksClient implements ISuperblocksClient {
     }
 
     async sendEthTransaction(transaction: ITransactionModel): Promise<ITransactionModel> {
-        console.log(`${this.utils.getApiBaseUrl()}/transactions`);
         const response = await this.fetch(`${this.utils.getApiBaseUrl()}/transactions`, {
             method: 'POST',
             headers: {
@@ -49,6 +48,28 @@ export class SuperblocksClient implements ISuperblocksClient {
         } else {
             console.log(await response.text());
             throw new Error('[Superblocks client] cannot create send transaction to the web3 hub');
+        }
+    }
+
+    async createRelease(workspaceId: string, userToken: string, environment: string): Promise<ITransactionModel> {
+        const response = await this.fetch(`${this.utils.getApiBaseUrl()}/workspaces/${workspaceId}/releases/`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'x-user-token': userToken
+            },
+            body: {
+                name: environment
+            }
+        });
+
+        if (response.ok) {
+            const tx = await response.json();
+            console.log('[Superblocks client] release created', tx);
+            return tx;
+        } else {
+            console.log(await response.text());
+            throw new Error('[Superblocks client] cannot create a release');
         }
     }
 }

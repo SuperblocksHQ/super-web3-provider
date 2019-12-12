@@ -18,7 +18,7 @@ import { injectable, inject } from 'inversify';
 import web3Utils from 'web3-utils';
 import { ITransactionModel, IRpcPayload } from '../superblocks/models';
 import { TYPES } from '../ioc/types';
-import { ISuperblocksClient, Fetch, IManualSignProvider, IPusherClient } from '../ioc/interfaces';
+import { ISuperblocksClient, IManualSignProvider, IPusherClient, IRpcClient } from '../ioc/interfaces';
 
 interface IProviderOptions {
     from: string;
@@ -33,20 +33,20 @@ export class ManualSignProvider implements IManualSignProvider {
     private readonly PROJECT_ID: string = process.env.SUPER_PROJECT_ID;
     private readonly BUILD_CONFIG_ID: string = process.env.SUPER_BUILD_CONFIG_ID;
     private readonly CI_JOB_ID: string = process.env.CI_JOB_ID;
-    private fetch: Fetch;
     private superblocksClient: ISuperblocksClient;
     private pusherClient: IPusherClient;
+    private rpcClient: IRpcClient;
     private options: IProviderOptions;
     private pendingTxs: Map<string, ITransactionModel>;
 
     constructor(
-        @inject(TYPES.Fetch) fetch: Fetch,
         @inject(TYPES.SuperblocksClient) superblocksClient: ISuperblocksClient,
-        @inject(TYPES.PusherClient) pusherClient: IPusherClient
+        @inject(TYPES.PusherClient) pusherClient: IPusherClient,
+        @inject(TYPES.RpcClient) rpcClient: IRpcClient
     ) {
-        this.fetch = fetch;
         this.superblocksClient = superblocksClient;
         this.pusherClient = pusherClient;
+        this.rpcClient = rpcClient;
     }
 
     public init(options: IProviderOptions)  {
@@ -70,7 +70,7 @@ export class ManualSignProvider implements IManualSignProvider {
          } else {
             // Methods which are not to be intercepted or do not need any account information could be
             // offloaded to Infura, Etherscan, custom Ethereum node or some other public node
-            return this.sendRpcJsonCall(payload);
+            return this.rpcClient.sendRpcJsonCall(this.options.endpoint, payload);
         }
     }
 
@@ -127,25 +127,6 @@ export class ManualSignProvider implements IManualSignProvider {
                     }
                 }
             });
-        });
-    }
-
-    private sendRpcJsonCall(payload: IRpcPayload): Promise<any> {
-        return new Promise(async (resolve, rejects) => {
-            try {
-                const response = await this.fetch(this.options.endpoint, {
-                    body: JSON.stringify(payload),
-                    headers: {
-                        'content-type': 'application/json',
-                    },
-                    method: 'POST'
-                });
-
-                const data = await response.json();
-                return resolve(data.result);
-            } catch (error) {
-                rejects(error);
-            }
         });
     }
 }

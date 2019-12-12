@@ -2,11 +2,12 @@ import { Container, ContainerModule } from 'inversify';
 import * as fetch from 'node-fetch';
 import * as pusher from 'pusher-js';
 import { TYPES } from './types';
-import { Fetch, Pusher, IManualSignProvider, ISuperblocksUtils, ISuperblocksClient, IPusherClient } from './interfaces';
+import { Fetch, Pusher, IManualSignProvider, ISuperblocksUtils, ISuperblocksClient, IPusherClient, IRpcClient } from './interfaces';
 import { SuperblocksUtils } from '../superblocks/utils';
 import { SuperblocksClient } from '../superblocks/superblocks.client';
 import { ManualSignProvider } from '../providers/super.provider';
 import { PusherClient } from '../pusher';
+import { RpcClient } from '../rpc';
 
 const thirdPartyDependencies = new ContainerModule((bind) => {
     bind<Fetch>(TYPES.Fetch).toConstantValue(fetch.default);
@@ -22,6 +23,7 @@ const applicationDependencies = new ContainerModule((bind) => {
     bind<ISuperblocksClient>(TYPES.SuperblocksClient).to(SuperblocksClient).inSingletonScope();
     bind<ISuperblocksUtils>(TYPES.SuperblocksUtils).to(SuperblocksUtils).inSingletonScope();
     bind<IPusherClient>(TYPES.PusherClient).to(PusherClient).inSingletonScope();
+    bind<IRpcClient>(TYPES.RpcClient).to(RpcClient).inSingletonScope();
 });
 
 const container = new Container();
