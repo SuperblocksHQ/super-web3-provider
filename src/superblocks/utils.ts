@@ -14,8 +14,10 @@
 // You should have received a copy of the GNU General Public License
 // along with Superblocks.  If not, see <http://www.gnu.org/licenses/>.
 
+import { injectable } from 'inversify';
 import { ISuperblocksUtils } from '../ioc/interfaces';
 
+@injectable()
 export class SuperblocksUtils implements ISuperblocksUtils {
     getApiBaseUrl() {
         if (process.env.DEBUG) {
