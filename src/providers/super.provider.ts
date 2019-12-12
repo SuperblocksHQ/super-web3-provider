@@ -15,9 +15,10 @@
 // along with Superblocks. If not, see <http://www.gnu.org/licenses/>.
 
 import { injectable, inject } from 'inversify';
-import { ITransactionModel, IRpcPayload } from './superblocks/models';
-import { TYPES } from './ioc/types';
-import { ISuperblocksClient, Fetch, IManualSignProvider, IPusherClient } from './ioc/interfaces';
+import web3Utils from 'web3-utils';
+import { ITransactionModel, IRpcPayload } from '../superblocks/models';
+import { TYPES } from '../ioc/types';
+import { ISuperblocksClient, Fetch, IManualSignProvider, IPusherClient } from '../ioc/interfaces';
 
 interface IProviderOptions {
     from: string;
@@ -26,29 +27,37 @@ interface IProviderOptions {
 }
 
 @injectable()
-export class InternalManualSignProvider implements IManualSignProvider {
+export class ManualSignProvider implements IManualSignProvider {
 
     // Pre-defined variable setup by the Superblocks CI when executing the job including the deployment process
     private readonly PROJECT_ID: string = process.env.SUPER_PROJECT_ID;
     private readonly BUILD_CONFIG_ID: string = process.env.SUPER_BUILD_CONFIG_ID;
     private readonly CI_JOB_ID: string = process.env.CI_JOB_ID;
     private fetch: Fetch;
-    private superClient: ISuperblocksClient;
+    private superblocksClient: ISuperblocksClient;
     private pusherClient: IPusherClient;
     private options: IProviderOptions;
     private pendingTxs: Map<string, ITransactionModel>;
 
     constructor(
         @inject(TYPES.Fetch) fetch: Fetch,
-        @inject(TYPES.SuperblocksClient) client: ISuperblocksClient,
+        @inject(TYPES.SuperblocksClient) superblocksClient: ISuperblocksClient,
         @inject(TYPES.PusherClient) pusherClient: IPusherClient
     ) {
         this.fetch = fetch;
-        this.superClient = client;
+        this.superblocksClient = superblocksClient;
         this.pusherClient = pusherClient;
     }
 
     public init(options: IProviderOptions)  {
+        if (!options.from || !web3Utils.checkAddressChecksum(options.from)) {
+            throw Error('The property from: is required to be set and needs to be a valid address');
+        } else if (!options.endpoint || options.endpoint === '') {
+            throw Error('The property endpoint: is required to be set');
+        } else if (!options.networkId || !Number(options.networkId)) {
+            throw Error('The property network: is required to be set and needs to be a valid number');
+        }
+
         this.options = options;
         this.pendingTxs = new Map();
     }
@@ -90,7 +99,7 @@ export class InternalManualSignProvider implements IManualSignProvider {
 
     private async sendRestApiCall(payload: IRpcPayload, networkId: string): Promise<any> {
         return new Promise(async (resolve) => {
-            const transaction = await this.superClient.sendEthTransaction({
+            const transaction = await this.superblocksClient.sendEthTransaction({
                 buildConfigId: this.BUILD_CONFIG_ID,
                 ciJobId: this.CI_JOB_ID,
                 projectId: this.PROJECT_ID,

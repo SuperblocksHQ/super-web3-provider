@@ -36,6 +36,7 @@
     "inversify": "^5.0.1",
     "node-fetch": "^2.6.0",
     "pusher-js": "5.0.2 ",
-    "reflect-metadata": "^0.1.13"
+    "reflect-metadata": "^0.1.13",
+    "web3-utils": "^1.2.4"
   }
 }

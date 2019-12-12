@@ -5,7 +5,7 @@ import { TYPES } from './types';
 import { Fetch, Pusher, IManualSignProvider, ISuperblocksUtils, ISuperblocksClient, IPusherClient } from './interfaces';
 import { SuperblocksUtils } from '../superblocks/utils';
 import { SuperblocksClient } from '../superblocks/superblocks.client';
-import { InternalManualSignProvider } from '..';
+import { ManualSignProvider } from '../providers/super.provider';
 import { PusherClient } from '../pusher';
 
 const thirdPartyDependencies = new ContainerModule((bind) => {
@@ -18,7 +18,7 @@ const thirdPartyDependencies = new ContainerModule((bind) => {
 });
 
 const applicationDependencies = new ContainerModule((bind) => {
-    bind<IManualSignProvider>(TYPES.InternalManualProvider).to(InternalManualSignProvider);
+    bind<IManualSignProvider>(TYPES.ManualSigningProvider).to(ManualSignProvider);
     bind<ISuperblocksClient>(TYPES.SuperblocksClient).to(SuperblocksClient).inSingletonScope();
     bind<ISuperblocksUtils>(TYPES.SuperblocksUtils).to(SuperblocksUtils).inSingletonScope();
     bind<IPusherClient>(TYPES.PusherClient).to(PusherClient).inSingletonScope();

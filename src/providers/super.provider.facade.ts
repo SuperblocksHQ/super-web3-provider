@@ -14,9 +14,9 @@
 // You should have received a copy of the GNU General Public License
 // along with Superblocks. If not, see <http://www.gnu.org/licenses/>.
 
-import { IManualSignProvider } from './ioc/interfaces';
-import { IRpcPayload } from './superblocks/models';
-import { internalManualSignProvider } from '.';
+import { IManualSignProvider } from '../ioc/interfaces';
+import { IRpcPayload } from '../superblocks/models';
+import { manualSignProvider } from '..';
 
 interface IProviderOptions {
     from: string;
@@ -28,18 +28,18 @@ interface IProviderOptions {
  * Simple Facade class in order to abstract the internal dependencies the ManualSignProvider has
  * so we can inject them using DI.
  */
-export class ManualSignProvider implements IManualSignProvider {
+export class ManualSignProviderFacade implements IManualSignProvider {
     constructor(options: IProviderOptions) {
-        internalManualSignProvider.init(options);
+        manualSignProvider.init(options);
     }
 
     sendMessage(payload: IRpcPayload, networkId: string): Promise<any> {
-        return internalManualSignProvider.sendMessage(payload, networkId);
+        return manualSignProvider.sendMessage(payload, networkId);
     }
     send(payload: IRpcPayload): Promise<any> {
-        return internalManualSignProvider.send(payload);
+        return manualSignProvider.send(payload);
     }
     sendAsync(payload: IRpcPayload, callback: (error: any, result: any) => void): void {
-        return internalManualSignProvider.sendAsync(payload, callback);
+        return manualSignProvider.sendAsync(payload, callback);
     }
 }
