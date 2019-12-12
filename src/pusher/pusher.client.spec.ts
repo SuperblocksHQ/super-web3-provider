@@ -17,26 +17,11 @@
 import 'reflect-metadata';
 import * as assert from 'assert';
 import * as sinon from 'ts-sinon';
-import { IPusherClient, IEventResponse, Pusher } from '../ioc/interfaces';
-import { TYPES } from '../ioc/types';
-import { container } from '../ioc/ioc.config';
+import { IPusherClient, IEventResponse } from '../ioc/interfaces';
 import { EventCallback } from 'pusher-js';
+import { PusherClient } from './pusher.client';
 
 let pusherClient: IPusherClient;
-
-// Create the necessary mocks to cover func dependencies
-// const mockChannel = sinon.stubInterface<Pusher.Channel>({
-//     bind(_eventName: string, callback: EventCallback, context?: any): any => {
-//         console.log('PUTTAAAAA');
-//         callback(context, 'Some Data');
-//         return mockChannel;
-//     })
-// });
-// const mockChannel = Partial<Pusher.Channel> {
-//     bind: (_eventName: string, callback: EventCallback, context?: any): any => {
-//         callback(context, 'Some Data');
-//     }
-// };
 
 const mockChannel = <Pusher.Channel> {
     bind(_eventName: string, callback: EventCallback, context?: any): any {
@@ -55,19 +40,6 @@ const mockPusher = <Pusher.Pusher> {
 };
 
 describe('PusherClient: Test connectToPusher', () => {
-    beforeEach(() => {
-        // create a snapshot so each unit test can modify
-        // it without breaking other unit tests
-        container.snapshot();
-    });
-
-    afterEach(() => {
-
-        // Restore to last snapshot so each unit test
-        // takes a clean copy of the application container
-        container.restore();
-    });
-
     it.skip('fails to create valid Pusher object due to bad identification key', () => {
         // TODO
     });
@@ -80,17 +52,7 @@ describe('PusherClient: Test connectToPusher', () => {
 describe('PusherClient: Test subscribeToChannel', () => {
 
     beforeEach(() => {
-        container.snapshot();
-
-        container.rebind<Pusher>(TYPES.Pusher).toConstantValue(mockPusher);
-        pusherClient = container.get<IPusherClient>(TYPES.PusherClient);
-    });
-
-    afterEach(() => {
-
-        // Restore to last snapshot so each unit test
-        // takes a clean copy of the application container
-        container.restore();
+        pusherClient = new PusherClient(mockPusher);
     });
 
     it.skip('checks subscribed channels data is empty at the start', () => {
@@ -122,10 +84,6 @@ describe('PusherClient: Test subscribeToChannel', () => {
     });
 
     it('checks subscriptions only map to specified entry in eventNames', (done) => {
-        // Lets clear take a clean copy of the application container
-        container.restore();
-        container.snapshot();
-
         // Keep track of calls to channel bind method
         let bindCount = 0;
         const modifiedMockChannel = <Pusher.Channel> {
@@ -141,8 +99,7 @@ describe('PusherClient: Test subscribeToChannel', () => {
             }
         };
 
-        container.rebind<Pusher>(TYPES.Pusher).toConstantValue(modifiedMockPusher);
-        pusherClient = container.get<IPusherClient>(TYPES.PusherClient);
+        pusherClient = new PusherClient(modifiedMockPusher);
 
         let currentBindCount = 0;
         assert.doesNotThrow(() => {
@@ -170,17 +127,7 @@ describe('PusherClient: Test subscribeToChannel', () => {
 
 describe('PusherClient: Test unsubscribeFromChannel', () => {
     beforeEach(() => {
-        container.snapshot();
-
-        container.rebind<Pusher>(TYPES.Pusher).toConstantValue(mockPusher);
-        pusherClient = container.get<IPusherClient>(TYPES.PusherClient);
-    });
-
-    afterEach(() => {
-
-        // Restore to last snapshot so each unit test
-        // takes a clean copy of the application container
-        container.restore();
+        pusherClient = new PusherClient(mockPusher);
     });
 
     it('successfully unsubscribes from previously subscribed channelName', (done) => {
