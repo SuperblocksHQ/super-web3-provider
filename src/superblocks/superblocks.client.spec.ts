@@ -18,16 +18,16 @@ import 'reflect-metadata';
 import * as sinon from 'ts-sinon';
 import * as assert from 'assert';
 import fetchMock, { MockResponse } from 'fetch-mock';
-import { ISuperblocksClient, Fetch, ISuperblocksUtils } from '../ioc/interfaces';
-import { TYPES } from '../ioc/types';
-import { container } from '../ioc/ioc.config';
+import { ISuperblocksClient, ISuperblocksUtils } from '../ioc/interfaces';
 import { ITransactionModel } from './models';
 import { SinonSandbox } from 'sinon';
+import { SuperblocksClient } from './superblocks.client';
 
 describe('SuperblocksClient: Test sendEthTransaction', () => {
 
     let superblocksClient: ISuperblocksClient;
     let sandbox: SinonSandbox;
+    let mockUtils: ISuperblocksUtils;
 
     const tx = <ITransactionModel> {
         buildConfigId: '1',
@@ -48,32 +48,27 @@ describe('SuperblocksClient: Test sendEthTransaction', () => {
         sandbox = sinon.default.createSandbox();
         sandbox.stub(console, 'log');
 
-        container.snapshot();
-        const mockUtils = sinon.stubInterface<ISuperblocksUtils>({ getApiBaseUrl: 'https://some-url'});
-        container.rebind<ISuperblocksUtils>(TYPES.SuperblocksUtils).toConstantValue(mockUtils);
+        mockUtils = sinon.stubInterface<ISuperblocksUtils>({ getApiBaseUrl: 'https://some-url'});
     });
 
     afterEach(() => {
-        container.restore();
         sandbox.restore();
     });
 
-    it.skip('sends Ethereum Transaction', () => {
-        const mockFetch = fetchMock.sandbox().post('https://some-url/transactions', <MockResponse>{ status: 202, body: tx });
-        container.rebind<Fetch>(TYPES.Fetch).toConstantValue(mockFetch);
-        superblocksClient = container.get<ISuperblocksClient>(TYPES.SuperblocksClient);
+    it('sends Ethereum Transaction', () => {
+        const mockFetch = fetchMock.sandbox().post('https://some-url/transactions', <MockResponse>{ status: 201, body: tx });
+        superblocksClient = new SuperblocksClient(mockFetch, mockUtils);
 
         let txResponse: ITransactionModel;
         assert.doesNotThrow(async () => {
             txResponse = await superblocksClient.sendEthTransaction(tx);
+            assert.deepStrictEqual(txResponse, tx);
         });
-        assert.deepStrictEqual(txResponse, tx);
     });
 
     it('fails to send request to inaccessible API address', async () => {
-        const mockFetch = fetchMock.sandbox().post('https://some-url/transactions', <MockResponse>{ status: 201, body: tx });
-        container.rebind<Fetch>(TYPES.Fetch).toConstantValue(mockFetch);
-        superblocksClient = container.get<ISuperblocksClient>(TYPES.SuperblocksClient);
+        const mockFetch = fetchMock.sandbox().post('https://some-url/transactions', <MockResponse>{ status: 400, body: { message: 'This is an error' }});
+        superblocksClient = new SuperblocksClient(mockFetch, mockUtils);
 
         try {
             await superblocksClient.sendEthTransaction(tx);
