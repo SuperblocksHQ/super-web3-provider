@@ -29,9 +29,7 @@
     "mocha": "^6.2.2",
     "ts-node": "^8.5.4",
     "ts-sinon": "^1.0.24",
-    "typescript": "^3.5.1",
-    "webpack": "^4.31.0",
-    "webpack-cli": "^3.3.2"
+    "typescript": "^3.5.1"
   },
   "dependencies": {
     "inversify": "^5.0.1",
