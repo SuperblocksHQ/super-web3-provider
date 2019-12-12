@@ -16,6 +16,7 @@
 
 import { injectable, inject } from 'inversify';
 import web3Utils from 'web3-utils';
+import ora from 'ora';
 import { ITransactionModel, IRpcPayload } from '../superblocks/models';
 import { TYPES } from '../ioc/types';
 import { ISuperblocksClient, IManualSignProvider, IPusherClient, IRpcClient } from '../ioc/interfaces';
@@ -98,7 +99,8 @@ export class ManualSignProvider implements IManualSignProvider {
     }
 
     private async sendRestApiCall(payload: IRpcPayload, networkId: string): Promise<any> {
-        console.log('[Manual Sign Provider] Sending tx to Superblocks');
+
+        const spinner = this.loadingLog('[Manual Sign Provider] Sending tx to Superblocks').start();
         return new Promise(async (resolve) => {
             const transaction = await this.superblocksClient.sendEthTransaction({
                 buildConfigId: this.BUILD_CONFIG_ID,
@@ -109,8 +111,10 @@ export class ManualSignProvider implements IManualSignProvider {
                 rpcPayload: payload
             });
 
+            spinner.succeed('[Manual Sign Provider] Transaction registered into Superblocks');
+
             this.pendingTxs.set(transaction.id, transaction);
-            console.log('[Manual Sign Provider] Waiting for tx to be signed in Superblocks');
+            spinner.start('[Manual Sign Provider] Waiting for tx to be signed in Superblocks');
 
             // We can only subscribe to the transaction on this precise moment, as otherwise we won't have the proper JobId mapped
             this.pusherClient.subscribeToChannel(`web3-hub-${transaction.jobId}`, ['update_transaction'], (event) => {
@@ -118,6 +122,8 @@ export class ManualSignProvider implements IManualSignProvider {
                     const txUpdated: ITransactionModel = event.message;
 
                     if (this.pendingTxs.get(txUpdated.id)) {
+                        spinner.succeed(`[Manual Sign Provider] Transaction sent. TxHash: ${txUpdated.transactionHash}`);
+
                         // TODO - Is his actually the right thing to do?
                         // Unsubscribe immediately after receiving the receipt txHash
                         this.pusherClient.unsubscribeFromChannel(`web3-hub-${transaction.jobId}`);
@@ -129,6 +135,14 @@ export class ManualSignProvider implements IManualSignProvider {
                     }
                 }
             });
+        });
+    }
+
+    private loadingLog(text: string): ora.Ora {
+        console.log('\n');
+        return ora({
+            text,
+            color: 'cyan',
         });
     }
 }
