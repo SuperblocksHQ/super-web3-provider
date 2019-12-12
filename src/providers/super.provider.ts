@@ -98,6 +98,7 @@ export class ManualSignProvider implements IManualSignProvider {
     }
 
     private async sendRestApiCall(payload: IRpcPayload, networkId: string): Promise<any> {
+        console.log('[Manual Sign Provider] Sending tx to Superblocks');
         return new Promise(async (resolve) => {
             const transaction = await this.superblocksClient.sendEthTransaction({
                 buildConfigId: this.BUILD_CONFIG_ID,
@@ -109,6 +110,7 @@ export class ManualSignProvider implements IManualSignProvider {
             });
 
             this.pendingTxs.set(transaction.id, transaction);
+            console.log('[Manual Sign Provider] Waiting for tx to be signed in Superblocks');
 
             // We can only subscribe to the transaction on this precise moment, as otherwise we won't have the proper JobId mapped
             this.pusherClient.subscribeToChannel(`web3-hub-${transaction.jobId}`, ['update_transaction'], (event) => {
