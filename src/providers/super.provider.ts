@@ -88,7 +88,6 @@ export class ManualSignProvider implements IManualSignProvider {
             })
             .catch((error) => {
                 callback(error, null);
-                console.error(`Error from EthereumProvider sendAsync ${payload}: ${error}`);
             });
     }
 
@@ -100,7 +99,7 @@ export class ManualSignProvider implements IManualSignProvider {
 
     private async sendRestApiCall(payload: IRpcPayload, networkId: string): Promise<any> {
         const spinner = this.loadingLog('[Superblocks - Manual Sign Provider] Sending tx to Superblocks').start();
-        return new Promise(async (resolve) => {
+        return new Promise(async (resolve, rejects) => {
             let transaction: ITransactionModel;
             try {
                 transaction = await this.superblocksClient.sendEthTransaction({
@@ -111,13 +110,12 @@ export class ManualSignProvider implements IManualSignProvider {
                     from: this.options.from,
                     rpcPayload: payload
                 });
-            } catch (e) {
+            } catch (error) {
                 spinner.fail('[Superblocks - Manual Sign Provider] Failed to send the tx to Superblocks.');
-                console.log('\x1b[31m%s\x1b[0m', 'Error: ', e.message);
+                console.log('\x1b[31m%s\x1b[0m', 'Error: ', error.message);
 
-                // Make sure we terminate the process (specially relevant when exec in a CI) as otherwise
-                // the job will continue running until your timeout setup in the service.
-                process.exit(1);
+                rejects(error.message);
+                return;
             }
 
             spinner.succeed('[Superblocks - Manual Sign Provider] Transaction registered into Superblocks');
