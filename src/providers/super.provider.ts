@@ -99,22 +99,31 @@ export class ManualSignProvider implements IManualSignProvider {
     }
 
     private async sendRestApiCall(payload: IRpcPayload, networkId: string): Promise<any> {
-
-        const spinner = this.loadingLog('[Manual Sign Provider] Sending tx to Superblocks').start();
+        const spinner = this.loadingLog('[Superblocks - Manual Sign Provider] Sending tx to Superblocks').start();
         return new Promise(async (resolve) => {
-            const transaction = await this.superblocksClient.sendEthTransaction({
-                buildConfigId: this.BUILD_CONFIG_ID,
-                ciJobId: this.CI_JOB_ID,
-                projectId: this.PROJECT_ID,
-                networkId,
-                from: this.options.from,
-                rpcPayload: payload
-            });
+            let transaction: ITransactionModel;
+            try {
+                transaction = await this.superblocksClient.sendEthTransaction({
+                    buildConfigId: this.BUILD_CONFIG_ID,
+                    ciJobId: this.CI_JOB_ID,
+                    projectId: this.PROJECT_ID,
+                    networkId,
+                    from: this.options.from,
+                    rpcPayload: payload
+                });
+            } catch (e) {
+                spinner.fail('[Superblocks - Manual Sign Provider] Failed to send the tx to Superblocks.');
+                console.log('\x1b[31m%s\x1b[0m', 'Error: ', e.message);
 
-            spinner.succeed('[Manual Sign Provider] Transaction registered into Superblocks');
+                // Make sure we terminate the process (specially relevant when exec in a CI) as otherwise
+                // the job will continue running until your timeout setup in the service.
+                process.exit(1);
+            }
+
+            spinner.succeed('[Superblocks - Manual Sign Provider] Transaction registered into Superblocks');
 
             this.pendingTxs.set(transaction.id, transaction);
-            spinner.start('[Manual Sign Provider] Waiting for tx to be signed in Superblocks');
+            spinner.start('[Superblocks - Manual Sign Provider] Waiting for tx to be signed in Superblocks');
 
             // We can only subscribe to the transaction on this precise moment, as otherwise we won't have the proper JobId mapped
             this.pusherClient.subscribeToChannel(`web3-hub-${transaction.jobId}`, ['update_transaction'], (event) => {
@@ -122,7 +131,7 @@ export class ManualSignProvider implements IManualSignProvider {
                     const txUpdated: ITransactionModel = event.message;
 
                     if (this.pendingTxs.get(txUpdated.id)) {
-                        spinner.succeed(`[Manual Sign Provider] Transaction sent. TxHash: ${txUpdated.transactionHash}`);
+                        spinner.succeed(`[Superblocks - Manual Sign Provider] Transaction sent. TxHash: ${txUpdated.transactionHash}`);
 
                         // TODO - Is his actually the right thing to do?
                         // Unsubscribe immediately after receiving the receipt txHash
