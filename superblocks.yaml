@@ -18,7 +18,7 @@ jobs:
 stages:
   - test:
       jobs:
-        - run_tests:
+        - run_tests
   - deploy:
       jobs:
         - deploy_to_npm:
