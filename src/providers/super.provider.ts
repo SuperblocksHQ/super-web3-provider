@@ -92,9 +92,7 @@ export class ManualSignProvider implements IManualSignProvider {
     }
 
     private getAccounts(): Promise<any> {
-        return new Promise((resolve) => {
-            resolve([this.options.from]);
-        });
+        return Promise.resolve([this.options.from]);
     }
 
     private async sendRestApiCall(payload: IRpcPayload, networkId: string): Promise<any> {
