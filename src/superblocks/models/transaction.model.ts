@@ -14,14 +14,7 @@
 // You should have received a copy of the GNU General Public License
 // along with Superblocks.  If not, see <http://www.gnu.org/licenses/>.
 
-export interface IRpcPayload {
-    jsonrpc: string;
-    id: number;
-    method: string;
-    params: [any];
-    result?: any;
-}
-
+import { JSONRPCRequestPayload } from 'ethereum-protocol';
 
 export enum MinedTransactionStatus {
     Success = '0x01',
@@ -63,7 +56,7 @@ export interface ITransactionModel {
     ciJobId?: string;
     from: string;
     networkId: string;
-    rpcPayload: IRpcPayload;
+    rpcPayload: JSONRPCRequestPayload;
 
     // This will only be available when the receipt is in place
     transactionHash?: string;

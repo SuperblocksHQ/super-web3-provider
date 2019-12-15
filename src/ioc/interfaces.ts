@@ -1,6 +1,7 @@
 import fetch from 'node-fetch';
 import pusher from 'pusher-js';
-import { ITransactionModel, IRpcPayload } from '../superblocks/models';
+import { ITransactionModel } from '../superblocks/models';
+import { JSONRPCErrorCallback, JSONRPCRequestPayload, JSONRPCResponsePayload } from 'ethereum-protocol';
 
 export type Fetch = typeof fetch.prototype;
 export type Pusher = typeof pusher.prototype;
@@ -15,7 +16,7 @@ export interface ISuperblocksClient {
 }
 
 export interface IRpcClient {
-    sendRpcJsonCall(endpoint: string, payload: IRpcPayload): Promise<any>;
+    sendRpcJsonCall(endpoint: string, payload: JSONRPCRequestPayload): Promise<any>;
 }
 
 export interface IManualSignProviderOptions {
@@ -26,9 +27,9 @@ export interface IManualSignProviderOptions {
 
 export interface IManualSignProvider {
     init?(options: IManualSignProviderOptions): void;
-    sendMessage(payload: IRpcPayload, networkId: string): Promise<any>;
-    send(payload: IRpcPayload): Promise<any>;
-    sendAsync(payload: IRpcPayload, callback: (error: any, result: any) => void): void;
+    sendMessage(payload: JSONRPCRequestPayload, networkId: string): Promise<any>;
+    send(payload: JSONRPCRequestPayload): Promise<any>;
+    sendAsync(payload: JSONRPCRequestPayload, callback: JSONRPCErrorCallback | JSONRpcCallback): void;
 }
 
 export interface IEventResponse {
@@ -40,3 +41,5 @@ export interface IPusherClient {
     subscribeToChannel(channelName: string, eventNames: [string], callback: (eventResponse: IEventResponse) => any): void;
     unsubscribeFromChannel(channelName: string): void;
 }
+
+export type JSONRpcCallback = (error: null, result: JSONRPCResponsePayload) => void;

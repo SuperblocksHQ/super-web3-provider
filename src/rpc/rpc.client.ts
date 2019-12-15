@@ -18,7 +18,7 @@
 import { injectable, inject } from 'inversify';
 import { TYPES } from '../ioc/types';
 import { Fetch, IRpcClient } from '../ioc/interfaces';
-import { IRpcPayload } from '../superblocks/models';
+import { JSONRPCRequestPayload } from 'ethereum-protocol';
 
 @injectable()
 export class RpcClient implements IRpcClient {
@@ -30,7 +30,7 @@ export class RpcClient implements IRpcClient {
         this.fetch = fetch;
     }
 
-    sendRpcJsonCall(endpoint: string, payload: IRpcPayload): Promise<any> {
+    sendRpcJsonCall(endpoint: string, payload: JSONRPCRequestPayload): Promise<any> {
         return new Promise(async (resolve, rejects) => {
             try {
                 const response = await this.fetch(endpoint, {

@@ -14,9 +14,9 @@
 // You should have received a copy of the GNU General Public License
 // along with Superblocks. If not, see <http://www.gnu.org/licenses/>.
 
-import { IManualSignProvider } from '../ioc/interfaces';
-import { IRpcPayload } from '../superblocks/models';
+import { IManualSignProvider, JSONRpcCallback } from '../ioc/interfaces';
 import { manualSignProvider } from '..';
+import { JSONRPCRequestPayload, JSONRPCErrorCallback } from 'ethereum-protocol';
 
 interface IProviderOptions {
     from: string;
@@ -33,13 +33,13 @@ export class ManualSignProviderFacade implements IManualSignProvider {
         manualSignProvider.init(options);
     }
 
-    sendMessage(payload: IRpcPayload, networkId: string): Promise<any> {
+    sendMessage(payload: JSONRPCRequestPayload, networkId: string): Promise<any> {
         return manualSignProvider.sendMessage(payload, networkId);
     }
-    send(payload: IRpcPayload): Promise<any> {
+    send(payload: JSONRPCRequestPayload): Promise<any> {
         return manualSignProvider.send(payload);
     }
-    sendAsync(payload: IRpcPayload, callback: (error: any, result: any) => void): void {
+    sendAsync(payload: JSONRPCRequestPayload, callback: JSONRPCErrorCallback | JSONRpcCallback): void {
         return manualSignProvider.sendAsync(payload, callback);
     }
 }

@@ -17,9 +17,11 @@
 import { injectable, inject } from 'inversify';
 import web3Utils from 'web3-utils';
 import ora from 'ora';
-import { ITransactionModel, IRpcPayload } from '../superblocks/models';
+import Url from 'url';
+import { JSONRPCRequestPayload, JSONRPCErrorCallback } from 'ethereum-protocol';
+import { ITransactionModel } from '../superblocks/models';
 import { TYPES } from '../ioc/types';
-import { ISuperblocksClient, IManualSignProvider, IPusherClient, IRpcClient } from '../ioc/interfaces';
+import { ISuperblocksClient, IManualSignProvider, IPusherClient, IRpcClient, JSONRpcCallback } from '../ioc/interfaces';
 
 interface IProviderOptions {
     from: string;
@@ -50,11 +52,28 @@ export class ManualSignProvider implements IManualSignProvider {
         this.rpcClient = rpcClient;
     }
 
+    public static isValidEndpoint(endpoint: string): boolean {
+        const validProtocols = ['http:', 'https:', 'ws:', 'wss:'];
+
+        if (typeof endpoint === 'string') {
+            const url = Url.parse(endpoint.toLowerCase());
+            return !!(validProtocols.includes(url.protocol || '') && url.slashes);
+        }
+
+        return false;
+    }
+
     public init(options: IProviderOptions)  {
         if (!options.from || !web3Utils.checkAddressChecksum(options.from)) {
             throw Error('The property from: is required to be set and needs to be a valid address');
-        } else if (!options.endpoint || options.endpoint === '') {
-            throw Error('The property endpoint: is required to be set');
+        } else if (!options.endpoint || options.endpoint === '' || !ManualSignProvider.isValidEndpoint(options.endpoint)) {
+            throw new Error(
+                [
+                  `Malformed provider URL: '${options.endpoint}'`,
+                  'Please specify a correct URL, using the http, https, ws, or wss protocol.',
+                  ''
+                ].join('\n')
+              );
         } else if (!options.networkId || !Number(options.networkId)) {
             throw Error('The property network: is required to be set and needs to be a valid number');
         }
@@ -63,7 +82,7 @@ export class ManualSignProvider implements IManualSignProvider {
         this.pendingTxs = new Map();
     }
 
-    public async sendMessage(payload: IRpcPayload, networkId: string): Promise<any> {
+    public async sendMessage(payload: JSONRPCRequestPayload, networkId: string): Promise<any> {
         if (payload.method === 'eth_accounts') {
             return this.getAccounts();
         } else if (payload.method === 'eth_sendTransaction' || payload.method === 'eth_sign') {
@@ -75,27 +94,29 @@ export class ManualSignProvider implements IManualSignProvider {
         }
     }
 
-    public send(payload: IRpcPayload): Promise<any> {
+    public send(payload: JSONRPCRequestPayload): Promise<any> {
         return this.sendMessage(payload, this.options.networkId);
     }
 
-    public sendAsync(payload: IRpcPayload, callback: (error: any, result: any) => void): void {
+    public sendAsync(payload: JSONRPCRequestPayload, callback: JSONRPCErrorCallback | JSONRpcCallback): void {
         this.sendMessage(payload, this.options.networkId)
             .then((result) => {
-                const response = payload;
-                response.result = result;
-                callback(null, response);
+                callback(null, {
+                    id: payload.id,
+                    jsonrpc: payload.jsonrpc,
+                    result
+                });
             })
             .catch((error) => {
                 callback(error, null);
             });
     }
 
-    private getAccounts(): Promise<any> {
+    private getAccounts(): Promise<string[]> {
         return Promise.resolve([this.options.from]);
     }
 
-    private async sendRestApiCall(payload: IRpcPayload, networkId: string): Promise<any> {
+    private async sendRestApiCall(payload: JSONRPCRequestPayload, networkId: string): Promise<any> {
         const spinner = this.loadingLog('[Superblocks - Manual Sign Provider] Sending tx to Superblocks').start();
         return new Promise(async (resolve, rejects) => {
             let transaction: ITransactionModel;

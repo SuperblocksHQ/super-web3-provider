@@ -21,6 +21,7 @@
   "homepage": "https://gitlab.com/superblocks/super-web3-provider#readme",
   "devDependencies": {
     "@types/bn.js": "^4.11.5",
+    "@types/ethereum-protocol": "^1.0.0",
     "@types/mocha": "^5.2.7",
     "@types/node": "^12.12.5",
     "@types/node-fetch": "^2.5.3",
@@ -32,6 +33,7 @@
     "typescript": "^3.5.1"
   },
   "dependencies": {
+    "ethereum-protocol": "^1.0.1",
     "inversify": "^5.0.1",
     "node-fetch": "^2.6.0",
     "ora": "^4.0.3",
