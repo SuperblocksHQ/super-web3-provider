@@ -33,6 +33,10 @@ export class ManualSignProviderFacade implements IManualSignProvider {
         manualSignProvider.init(options);
     }
 
+    getAccounts(): Promise<string[]> {
+        return manualSignProvider.getAccounts();
+    }
+
     sendMessage(payload: JSONRPCRequestPayload, networkId: string): Promise<any> {
         return manualSignProvider.sendMessage(payload, networkId);
     }

@@ -82,7 +82,12 @@ export class ManualSignProvider implements IManualSignProvider {
         this.pendingTxs = new Map();
     }
 
+    public getAccounts(): Promise<string[]> {
+        return Promise.resolve([this.options.from]);
+    }
+
     public async sendMessage(payload: JSONRPCRequestPayload, networkId: string): Promise<any> {
+        console.log(payload);
         if (payload.method === 'eth_accounts') {
             return this.getAccounts();
         } else if (payload.method === 'eth_sendTransaction' || payload.method === 'eth_sign') {
@@ -110,10 +115,6 @@ export class ManualSignProvider implements IManualSignProvider {
             .catch((error) => {
                 callback(error, null);
             });
-    }
-
-    private getAccounts(): Promise<string[]> {
-        return Promise.resolve([this.options.from]);
     }
 
     private async sendRestApiCall(payload: JSONRPCRequestPayload, networkId: string): Promise<any> {
