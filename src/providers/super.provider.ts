@@ -65,8 +65,8 @@ export class ManualSignProvider implements IManualSignProvider {
     }
 
     public async init(options: IProviderOptions)  {
-        if (!options.from || !web3Utils.checkAddressChecksum(options.from)) {
-            throw Error('The property from: is required to be set and needs to be a valid address');
+        if (!options.from || options.from === '' || !web3Utils.checkAddressChecksum(options.from)) {
+            throw new Error('The property from: is required to be set and needs to be a valid address');
         } else if (!options.endpoint || options.endpoint === '' || !ManualSignProvider.isValidEndpoint(options.endpoint)) {
             throw new Error(
                 [
@@ -76,11 +76,11 @@ export class ManualSignProvider implements IManualSignProvider {
                 ].join('\n')
               );
         } else if (!options.networkId || !Number(options.networkId)) {
-            throw Error('The property network: is required to be set and needs to be a valid number');
+            throw new Error('The property network: is required to be set and needs to be a valid number');
         } else if (!options.token || options.token === '') {
-            throw Error('The property token: is required to be set');
+            throw new Error('The property token: is required to be set');
         } else if (!options.workspaceId || options.workspaceId === '') {
-            throw Error('The property workspaceId: is required to be set');
+            throw new Error('The property workspaceId: is required to be set');
         }
 
         this.options = options;

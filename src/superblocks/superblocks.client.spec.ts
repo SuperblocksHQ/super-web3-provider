@@ -129,7 +129,7 @@ describe('SuperblocksClient:', () => {
             try {
                 await superblocksClient.createRelease(workspaceId, userToken, environment);
             } catch (e) {
-                assert.deepStrictEqual(e.message, '[Superblocks client] cannot create a release');
+                assert.deepStrictEqual(e.message, '[Superblocks client] cannot create a release: {"message":"This is an error"}');
             }
         });
     });

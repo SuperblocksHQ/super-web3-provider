@@ -26,7 +26,7 @@ export interface IManualSignProviderOptions {
 }
 
 export interface IManualSignProvider {
-    init?(options: IManualSignProviderOptions): void;
+    init?(options: IManualSignProviderOptions): Promise<void>;
     getAccounts(): Promise<string[]>;
     sendMessage(payload: JSONRPCRequestPayload, networkId: string): Promise<any>;
     send(payload: JSONRPCRequestPayload): Promise<any>;
