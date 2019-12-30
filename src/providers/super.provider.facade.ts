@@ -30,7 +30,12 @@ interface IProviderOptions {
  */
 export class ManualSignProviderFacade implements IManualSignProvider {
     constructor(options: IProviderOptions) {
-        manualSignProvider.init(options);
+        try {
+            manualSignProvider.init(options);
+        } catch (err) {
+            // Lets finish the process for now
+            process.exit(2);
+        }
     }
 
     getAccounts(): Promise<string[]> {

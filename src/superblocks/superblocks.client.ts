@@ -32,11 +32,12 @@ export class SuperblocksClient implements ISuperblocksClient {
         this.utils = utils;
     }
 
-    async sendEthTransaction(transaction: ITransactionModel): Promise<ITransactionModel> {
-        const response = await this.fetch(`${this.utils.getApiBaseUrl()}/transactions`, {
+    async sendEthTransaction(releaseId: string, token: string, transaction: ITransactionModel): Promise<ITransactionModel> {
+        const response = await this.fetch(`${this.utils.getApiBaseUrl()}/releases/${releaseId}/transactions`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
+                'project-token': token
             },
             body: JSON.stringify(transaction)
         });
@@ -51,16 +52,17 @@ export class SuperblocksClient implements ISuperblocksClient {
         }
     }
 
-    async createRelease(workspaceId: string, userToken: string, environment: string): Promise<ITransactionModel> {
+    async createRelease(workspaceId: string, token: string, environment: string): Promise<ITransactionModel> {
         const response = await this.fetch(`${this.utils.getApiBaseUrl()}/workspaces/${workspaceId}/releases/`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'x-user-token': userToken
+                'project-token': token
             },
-            body: {
-                name: environment
-            }
+            body: JSON.stringify({
+                environment,
+                type: 'ethereum'
+            })
         });
 
         if (response.ok) {
@@ -68,8 +70,8 @@ export class SuperblocksClient implements ISuperblocksClient {
             console.log('[Superblocks client] release created', tx);
             return tx;
         } else {
-            console.log(await response.text());
-            throw new Error('[Superblocks client] cannot create a release');
+            const error = await response.text();
+            throw new Error(`[Superblocks client] cannot create a release: ${error}`);
         }
     }
 }

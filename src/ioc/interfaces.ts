@@ -1,6 +1,6 @@
 import fetch from 'node-fetch';
 import pusher from 'pusher-js';
-import { ITransactionModel } from '../superblocks/models';
+import { ITransactionModel, ITransactionParamsModel } from '../superblocks/models';
 import { JSONRPCErrorCallback, JSONRPCRequestPayload, JSONRPCResponsePayload } from 'ethereum-protocol';
 
 export type Fetch = typeof fetch.prototype;
@@ -11,8 +11,8 @@ export interface ISuperblocksUtils {
 }
 
 export interface ISuperblocksClient {
-    sendEthTransaction(transaction: ITransactionModel): Promise<ITransactionModel>;
-    createRelease(workspaceId: string, userToken: string, networkId: string): Promise<ITransactionModel>;
+    sendEthTransaction(releaseId: string, token: string, transaction: ITransactionParamsModel): Promise<ITransactionModel>;
+    createRelease(workspaceId: string, token: string, networkId: string): Promise<ITransactionModel>;
 }
 
 export interface IRpcClient {
