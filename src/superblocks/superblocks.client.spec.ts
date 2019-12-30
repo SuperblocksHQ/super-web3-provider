@@ -66,22 +66,24 @@ describe('SuperblocksClient:', () => {
 
     describe('sendEthTransaction:', () => {
         it('sends Ethereum Transaction', () => {
-            const mockFetch = fetchMock.sandbox().post('https://some-url/transactions', <MockResponse>{ status: 201, body: tx });
+            const releaseId = 'dummyId';
+            const mockFetch = fetchMock.sandbox().post(`https://some-url/releases/${releaseId}/transactions`, <MockResponse>{ status: 201, body: tx });
             superblocksClient = new SuperblocksClient(mockFetch, mockUtils);
 
             let txResponse: ITransactionModel;
             assert.doesNotThrow(async () => {
-                txResponse = await superblocksClient.sendEthTransaction('dummyId', 'dummyToken', txParams);
+                txResponse = await superblocksClient.sendEthTransaction(releaseId, 'dummyToken', txParams);
                 assert.deepStrictEqual(txResponse, tx);
             });
         });
 
         it('fails to send request due to API error response', async () => {
-            const mockFetch = fetchMock.sandbox().post('https://some-url/transactions', <MockResponse>{ status: 400, body: { message: 'This is an error' }});
+            const releaseId = 'dummyId';
+            const mockFetch = fetchMock.sandbox().post(`https://some-url/releases/${releaseId}/transactions`, <MockResponse>{ status: 400, body: { message: 'This is an error' }});
             superblocksClient = new SuperblocksClient(mockFetch, mockUtils);
 
             try {
-                await superblocksClient.sendEthTransaction('dummyId', 'dummyToken', txParams);
+                await superblocksClient.sendEthTransaction(releaseId, 'dummyToken', txParams);
             } catch (e) {
                 assert.equal(e.message, '[Superblocks client] cannot create send transaction to the web3 hub');
             }
