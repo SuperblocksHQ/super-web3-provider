@@ -19,7 +19,7 @@ import * as sinon from 'ts-sinon';
 import * as assert from 'assert';
 import fetchMock, { MockResponse } from 'fetch-mock';
 import { ISuperblocksClient, ISuperblocksUtils } from '../ioc/interfaces';
-import { ITransactionModel } from './models';
+import { ITransactionModel, ITransactionParamsModel } from './models';
 import { SinonSandbox } from 'sinon';
 import { SuperblocksClient } from './superblocks.client';
 
@@ -40,10 +40,20 @@ describe('SuperblocksClient:', () => {
         sandbox.restore();
     });
 
-    const tx = <ITransactionModel> {
-        buildConfigId: '1',
+    const txParams = <ITransactionParamsModel> {
         ciJobId: '2',
-        projectId: '3',
+        networkId: '4',
+        from: '0x5678900000000000000000000000000000004321',
+        rpcPayload: {
+            jsonrpc: 'data',
+            id: 0,
+            method: 'eth_sendTransaction',
+            params: ['parameters']
+        },
+    };
+
+    const tx = <ITransactionModel> {
+        id: '2',
         networkId: '4',
         from: '0x5678900000000000000000000000000000004321',
         rpcPayload: {
@@ -61,7 +71,7 @@ describe('SuperblocksClient:', () => {
 
             let txResponse: ITransactionModel;
             assert.doesNotThrow(async () => {
-                txResponse = await superblocksClient.sendEthTransaction(tx);
+                txResponse = await superblocksClient.sendEthTransaction('dummyId', 'dummyToken', txParams);
                 assert.deepStrictEqual(txResponse, tx);
             });
         });
@@ -71,7 +81,7 @@ describe('SuperblocksClient:', () => {
             superblocksClient = new SuperblocksClient(mockFetch, mockUtils);
 
             try {
-                await superblocksClient.sendEthTransaction(tx);
+                await superblocksClient.sendEthTransaction('dummyId', 'dummyToken', txParams);
             } catch (e) {
                 assert.equal(e.message, '[Superblocks client] cannot create send transaction to the web3 hub');
             }
