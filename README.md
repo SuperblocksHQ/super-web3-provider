@@ -1,6 +1,6 @@
 # super-web3-provider
 
-[![Superblocks](https://superblocks.com/d/superblocks/projects/superblocks-platform.svg?branch=master)](https://superblocks.com/d/superblocks/projects/superblocks-platform)
+[![Superblocks](https://superblocks.com/d/superblocks/projects/superblocks-platform.svg?branch=master)](https://superblocks.com/d/superblocks/projects/superblocks-platform) ![npm](https://img.shields.io/npm/v/super-web3-provider?color=blue)
 
 Web3 provider to create a secure channel between our CI runners and the Superblocks platform to handle Smart Contract deployments through our blockchain dedicated CI/CD platform
 
