@@ -49,7 +49,7 @@ export interface ITransactionModel {
     from: string;
     networkId: string;
     rpcPayload: JSONRPCRequestPayload;
-    releaseId: string;
+    deploymentId: string;
 
     // This will only be available when the receipt is in place
     transactionHash?: string;

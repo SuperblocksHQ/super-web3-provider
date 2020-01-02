@@ -17,4 +17,4 @@
 export * from './transaction.model';
 export * from './apiError.model';
 export * from './transaction-params.model';
-export * from './release.model';
+export * from './deployment.model';

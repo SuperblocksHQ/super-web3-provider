@@ -14,7 +14,7 @@
 // You should have received a copy of the GNU General Public License
 // along with Superblocks.  If not, see <http://www.gnu.org/licenses/>.
 // import fetch from 'node-fetch';
-import { ITransactionModel, IReleaseModel } from './models';
+import { ITransactionModel, IDeploymentModel } from './models';
 import { injectable, inject } from 'inversify';
 import { TYPES } from '../ioc/types';
 import { Fetch, ISuperblocksUtils, ISuperblocksClient } from '../ioc/interfaces';
@@ -32,8 +32,8 @@ export class SuperblocksClient implements ISuperblocksClient {
         this.utils = utils;
     }
 
-    async sendEthTransaction(releaseId: string, token: string, transaction: ITransactionModel): Promise<ITransactionModel> {
-        const response = await this.fetch(`${this.utils.getApiBaseUrl()}/releases/${releaseId}/transactions`, {
+    async sendEthTransaction(deploymentId: string, token: string, transaction: ITransactionModel): Promise<ITransactionModel> {
+        const response = await this.fetch(`${this.utils.getApiBaseUrl()}/deployments/${deploymentId}/transactions`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -52,8 +52,8 @@ export class SuperblocksClient implements ISuperblocksClient {
         }
     }
 
-    async createRelease(workspaceId: string, token: string, environment: string): Promise<IReleaseModel> {
-        const response = await this.fetch(`${this.utils.getApiBaseUrl()}/workspaces/${workspaceId}/releases/`, {
+    async createDeployment(deploymentSpaceId: string, token: string, environment: string): Promise<IDeploymentModel> {
+        const response = await this.fetch(`${this.utils.getApiBaseUrl()}/deployment-spaces/${deploymentSpaceId}/deployments/`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -66,12 +66,12 @@ export class SuperblocksClient implements ISuperblocksClient {
         });
 
         if (response.ok) {
-            const release = await response.json();
-            console.log('[Superblocks client] release created', release);
-            return release;
+            const deployment = await response.json();
+            console.log('[Superblocks client] deployment created', deployment);
+            return deployment;
         } else {
             const error = await response.text();
-            throw new Error(`[Superblocks client] cannot create a release: ${error}`);
+            throw new Error(`[Superblocks client] cannot create a deployment: ${error}`);
         }
     }
 }

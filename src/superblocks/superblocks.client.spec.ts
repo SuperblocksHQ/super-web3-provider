@@ -19,7 +19,7 @@ import * as sinon from 'ts-sinon';
 import * as assert from 'assert';
 import fetchMock, { MockResponse } from 'fetch-mock';
 import { ISuperblocksClient, ISuperblocksUtils } from '../ioc/interfaces';
-import { ITransactionModel, ITransactionParamsModel, IReleaseModel } from './models';
+import { ITransactionModel, ITransactionParamsModel, IDeploymentModel } from './models';
 import { SinonSandbox } from 'sinon';
 import { SuperblocksClient } from './superblocks.client';
 
@@ -66,37 +66,37 @@ describe('SuperblocksClient:', () => {
 
     describe('sendEthTransaction:', () => {
         it('sends Ethereum Transaction', () => {
-            const releaseId = 'dummyId';
-            const mockFetch = fetchMock.sandbox().post(`https://some-url/releases/${releaseId}/transactions`, <MockResponse>{ status: 201, body: tx });
+            const deploymentId = 'dummyId';
+            const mockFetch = fetchMock.sandbox().post(`https://some-url/deployments/${deploymentId}/transactions`, <MockResponse>{ status: 201, body: tx });
             superblocksClient = new SuperblocksClient(mockFetch, mockUtils);
 
             let txResponse: ITransactionModel;
             assert.doesNotThrow(async () => {
-                txResponse = await superblocksClient.sendEthTransaction(releaseId, 'dummyToken', txParams);
+                txResponse = await superblocksClient.sendEthTransaction(deploymentId, 'dummyToken', txParams);
                 assert.deepStrictEqual(txResponse, tx);
             });
         });
 
         it('fails to send request due to API error response', async () => {
-            const releaseId = 'dummyId';
-            const mockFetch = fetchMock.sandbox().post(`https://some-url/releases/${releaseId}/transactions`, <MockResponse>{ status: 400, body: { message: 'This is an error' }});
+            const deploymentId = 'dummyId';
+            const mockFetch = fetchMock.sandbox().post(`https://some-url/deployments/${deploymentId}/transactions`, <MockResponse>{ status: 400, body: { message: 'This is an error' }});
             superblocksClient = new SuperblocksClient(mockFetch, mockUtils);
 
             try {
-                await superblocksClient.sendEthTransaction(releaseId, 'dummyToken', txParams);
+                await superblocksClient.sendEthTransaction(deploymentId, 'dummyToken', txParams);
             } catch (e) {
                 assert.equal(e.message, '[Superblocks client] cannot create send transaction to the web3 hub');
             }
         });
     });
 
-    describe('createRelease:', () => {
-        it('creates a new Superblocks release', () => {
-            const workspaceId = 'workspaceId01234567890';
+    describe('createDeployment:', () => {
+        it('creates a new Superblocks deployment', () => {
+            const deploymentSpaceId = 'deploymentSpaceId01234567890';
             const userToken = 'userToken0987654321';
             const environment = 'environment1234567890';
 
-            const mockFetch = fetchMock.sandbox().post(`https://some-url/workspaces/${workspaceId}/releases/`,
+            const mockFetch = fetchMock.sandbox().post(`https://some-url/deployment-spaces/${deploymentSpaceId}/deployments/`,
                 <MockResponse>{
                     status: 201,
                     body: {
@@ -106,21 +106,21 @@ describe('SuperblocksClient:', () => {
 
             superblocksClient = new SuperblocksClient(mockFetch, mockUtils);
 
-            let releaseResponse: IReleaseModel;
+            let deploymentResponse: IDeploymentModel;
             assert.doesNotThrow(async () => {
-                releaseResponse = await superblocksClient.createRelease(workspaceId, userToken, environment);
-                assert.deepStrictEqual(releaseResponse, {
+                deploymentResponse = await superblocksClient.createDeployment(deploymentSpaceId, userToken, environment);
+                assert.deepStrictEqual(deploymentResponse, {
                     id: 'id'
                 });
             });
         });
 
-        it('fails to create release due to API error response', async () => {
-            const workspaceId = 'workspaceId01234567890';
+        it('fails to create a deployment due to API error response', async () => {
+            const deploymentSpaceId = 'deploymentSpaceId01234567890';
             const userToken = 'userToken0987654321';
             const environment = 'environment1234567890';
 
-            const mockFetch = fetchMock.sandbox().post(`https://some-url/workspaces/${workspaceId}/releases/`,
+            const mockFetch = fetchMock.sandbox().post(`https://some-url/deployment-spaces/${deploymentSpaceId}/deployments/`,
                 <MockResponse>{
                     status: 400,
                     body: {
@@ -131,9 +131,9 @@ describe('SuperblocksClient:', () => {
             superblocksClient = new SuperblocksClient(mockFetch, mockUtils);
 
             try {
-                await superblocksClient.createRelease(workspaceId, userToken, environment);
+                await superblocksClient.createDeployment(deploymentSpaceId, userToken, environment);
             } catch (e) {
-                assert.deepStrictEqual(e.message, '[Superblocks client] cannot create a release: {"message":"This is an error"}');
+                assert.deepStrictEqual(e.message, '[Superblocks client] cannot create a deployment: {"message":"This is an error"}');
             }
         });
     });

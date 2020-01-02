@@ -32,7 +32,7 @@ export class ManualSignProvider implements IManualSignProvider {
     private pusherClient: IPusherClient;
     private rpcClient: IRpcClient;
     private options: IManualSignProviderOptions;
-    private releaseId: string;
+    private deploymentId: string;
     private pendingTxs: Map<string, ITransactionModel>;
 
     constructor(
@@ -71,16 +71,16 @@ export class ManualSignProvider implements IManualSignProvider {
             throw new Error('The property network: is required to be set and needs to be a valid number');
         } else if (!options.token || options.token === '') {
             throw new Error('The property token: is required to be set');
-        } else if (!options.workspaceId || options.workspaceId === '') {
-            throw new Error('The property workspaceId: is required to be set');
+        } else if (!options.deploymentSpaceId || options.deploymentSpaceId === '') {
+            throw new Error('The property deploymentSpaceId: is required to be set');
         }
 
         this.options = options;
         this.pendingTxs = new Map();
 
-        // Let make sure we crete a new release on every init in order to group txs together
-        const release = await this.superblocksClient.createRelease(options.workspaceId, options.token, options.networkId);
-        this.releaseId = release.id;
+        // Let make sure we crete a new deployment on every init in order to group txs together
+        const deployment = await this.superblocksClient.createDeployment(options.deploymentSpaceId, options.token, options.networkId);
+        this.deploymentId = deployment.id;
     }
 
     public getAccounts(): Promise<string[]> {
@@ -122,7 +122,7 @@ export class ManualSignProvider implements IManualSignProvider {
         return new Promise(async (resolve, rejects) => {
             let transaction: ITransactionModel;
             try {
-                transaction = await this.superblocksClient.sendEthTransaction(this.releaseId, this.options.token, {
+                transaction = await this.superblocksClient.sendEthTransaction(this.deploymentId, this.options.token, {
                     networkId,
                     from: this.options.from,
                     rpcPayload: payload
@@ -141,7 +141,7 @@ export class ManualSignProvider implements IManualSignProvider {
             spinner.start('[Superblocks - Manual Sign Provider] Waiting for tx to be signed in Superblocks\n');
 
             // We can only subscribe to the transaction on this precise moment, as otherwise we won't have the proper JobId mapped
-            this.pusherClient.subscribeToChannel(`web3-hub-${transaction.releaseId}`, ['update_transaction'], (event) => {
+            this.pusherClient.subscribeToChannel(`web3-hub-${transaction.deploymentId}`, ['update_transaction'], (event) => {
                 if (event.eventName === 'update_transaction') {
                     const txUpdated: ITransactionModel = event.message;
 
@@ -150,7 +150,7 @@ export class ManualSignProvider implements IManualSignProvider {
 
                         // TODO - Is his actually the right thing to do?
                         // Unsubscribe immediately after receiving the receipt txHash
-                        this.pusherClient.unsubscribeFromChannel(`web3-hub-${transaction.releaseId}`);
+                        this.pusherClient.unsubscribeFromChannel(`web3-hub-${transaction.deploymentId}`);
 
                         this.pendingTxs.delete(txUpdated.id);
 

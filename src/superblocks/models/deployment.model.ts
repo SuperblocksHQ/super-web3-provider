@@ -14,6 +14,6 @@
 // You should have received a copy of the GNU General Public License
 // along with Superblocks.  If not, see <http://www.gnu.org/licenses/>.
 
-export interface IReleaseModel {
+export interface IDeploymentModel {
     id: string;
 }
