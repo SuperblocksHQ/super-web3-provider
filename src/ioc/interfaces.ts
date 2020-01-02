@@ -20,6 +20,8 @@ export interface IRpcClient {
 }
 
 export interface IManualSignProviderOptions {
+    workspaceId: string;
+    token: string;
     from: string;
     endpoint: string;
     networkId: string;

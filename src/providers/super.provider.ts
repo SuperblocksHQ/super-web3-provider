@@ -21,15 +21,7 @@ import Url from 'url';
 import { JSONRPCRequestPayload, JSONRPCErrorCallback } from 'ethereum-protocol';
 import { ITransactionModel } from '../superblocks/models';
 import { TYPES } from '../ioc/types';
-import { ISuperblocksClient, IManualSignProvider, IPusherClient, IRpcClient, JSONRpcCallback } from '../ioc/interfaces';
-
-interface IProviderOptions {
-    workspaceId: string;
-    token: string;
-    from: string;
-    endpoint: string;
-    networkId: string;
-}
+import { ISuperblocksClient, IManualSignProvider, IPusherClient, IRpcClient, JSONRpcCallback, IManualSignProviderOptions } from '../ioc/interfaces';
 
 @injectable()
 export class ManualSignProvider implements IManualSignProvider {
@@ -39,7 +31,7 @@ export class ManualSignProvider implements IManualSignProvider {
     private superblocksClient: ISuperblocksClient;
     private pusherClient: IPusherClient;
     private rpcClient: IRpcClient;
-    private options: IProviderOptions;
+    private options: IManualSignProviderOptions;
     private releaseId: string;
     private pendingTxs: Map<string, ITransactionModel>;
 
@@ -64,7 +56,7 @@ export class ManualSignProvider implements IManualSignProvider {
         return false;
     }
 
-    public async init(options: IProviderOptions)  {
+    public async init(options: IManualSignProviderOptions)  {
         if (!options.from || options.from === '' || !web3Utils.checkAddressChecksum(options.from)) {
             throw new Error('The property from: is required to be set and needs to be a valid address');
         } else if (!options.endpoint || options.endpoint === '' || !ManualSignProvider.isValidEndpoint(options.endpoint)) {
@@ -147,7 +139,7 @@ export class ManualSignProvider implements IManualSignProvider {
             spinner.succeed('[Superblocks - Manual Sign Provider] Transaction registered into Superblocks');
 
             this.pendingTxs.set(transaction.id, transaction);
-            spinner.start('[Superblocks - Manual Sign Provider] Waiting for tx to be signed in Superblocks');
+            spinner.start('[Superblocks - Manual Sign Provider] Waiting for tx to be signed in Superblocks\n');
 
             // We can only subscribe to the transaction on this precise moment, as otherwise we won't have the proper JobId mapped
             this.pusherClient.subscribeToChannel(`web3-hub-${transaction.releaseId}`, ['update_transaction'], (event) => {

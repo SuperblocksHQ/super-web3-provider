@@ -19,7 +19,7 @@ import * as assert from 'assert';
 import * as sinon from 'ts-sinon';
 import { SinonSandbox } from 'sinon';
 import { ManualSignProvider } from './super.provider';
-import { ISuperblocksClient, IPusherClient, IRpcClient, IEventResponse } from '../ioc/interfaces';
+import { ISuperblocksClient, IPusherClient, IRpcClient, IEventResponse, IManualSignProvider } from '../ioc/interfaces';
 import { ITransactionModel, IReleaseModel } from '../superblocks/models';
 import { JSONRPCRequestPayload, JSONRPCResponsePayload } from 'ethereum-protocol';
 
@@ -27,6 +27,60 @@ import { JSONRPCRequestPayload, JSONRPCResponsePayload } from 'ethereum-protocol
 // Disable specific tslint warnings
 /* tslint:disable:no-unused-expression */
 /* tslint:disable:max-classes-per-file */
+
+
+class TestSuperblocksClient implements ISuperblocksClient {
+    sendEthTransaction(releaseId: string, _token: string, transaction: ITransactionModel): Promise<ITransactionModel> {
+        return Promise.resolve({
+                id: '1234',
+                releaseId,
+                from: transaction.from,
+                networkId: transaction.networkId,
+                rpcPayload: {
+                    params: [],
+                    method: transaction.rpcPayload.method,
+                    id: transaction.rpcPayload.id,
+                    jsonrpc: transaction.rpcPayload.jsonrpc,
+                }
+        });
+    }
+
+    createRelease(workspaceId: string, token: string, networkId: string): Promise<IReleaseModel> {
+        return new Promise((resolve, __) => {
+            (workspaceId);
+            (token);
+            (networkId);
+            return resolve({
+                id: 'id',
+            });
+        });
+    }
+}
+
+class TestPusherClient implements IPusherClient {
+    subscribeToChannel(channelName: string, eventNames: [string], callback: (eventResponse: IEventResponse) => any): void {
+        (channelName);
+        (eventNames);
+        callback({
+            eventName: 'update_transaction',
+            message: channelName
+        });
+    }
+
+    unsubscribeFromChannel(channelName: string): void {
+        (channelName);
+    }
+}
+
+class TestRpcClient implements IRpcClient {
+    sendRpcJsonCall(endpoint: string, payload: JSONRPCRequestPayload): Promise<any> {
+        return new Promise(async (resolve, _) => {
+            (endpoint);
+            (payload);
+            return resolve([]);
+        });
+    }
+}
 
 describe('ManualSignProvider:', () => {
 
@@ -87,21 +141,24 @@ describe('ManualSignProvider:', () => {
     });
 
     describe('init:', () => {
+        let manualSignProvider: IManualSignProvider;
+
+        beforeEach(() => {
+            const client = new TestSuperblocksClient();
+            manualSignProvider = new ManualSignProvider(client, null, null);
+        });
+
         it('initializes manual sign provider successfully', () => {
-            const manualSignProvider = new ManualSignProvider(null, null, null);
-            assert.doesNotReject(() => {
-                return manualSignProvider.init({
-                    workspaceId: 'dummyId',
-                    token: 'dummyToken',
-                    from: '0x3117958590752b0871548Dd8715b4C4c41372d3d',
-                    endpoint: 'http://127.0.0.1',
-                    networkId: '1'
-                });
+            return manualSignProvider.init({
+                workspaceId: 'dummyId',
+                token: 'dummyToken',
+                from: '0x3117958590752b0871548Dd8715b4C4c41372d3d',
+                endpoint: 'http://127.0.0.1',
+                networkId: '1'
             });
         });
 
         it('fails to initialize when from option is empty', () => {
-            const manualSignProvider = new ManualSignProvider(null, null, null);
             assert.rejects(() => {
                 return manualSignProvider.init({
                     workspaceId: 'dummyId',
@@ -114,7 +171,6 @@ describe('ManualSignProvider:', () => {
         });
 
         it('fails to initialize when from option is invalid', () => {
-            const manualSignProvider = new ManualSignProvider(null, null, null);
             assert.rejects(() => {
                 return manualSignProvider.init({
                     workspaceId: 'dummyId',
@@ -127,7 +183,6 @@ describe('ManualSignProvider:', () => {
         });
 
         it('fails to initialize when endpoint option is empty', () => {
-            const manualSignProvider = new ManualSignProvider(null, null, null);
             assert.rejects(() => {
                 return manualSignProvider.init({
                     workspaceId: 'dummyId',
@@ -140,7 +195,6 @@ describe('ManualSignProvider:', () => {
         });
 
         it('fails to initialize when endpoint option is missing protocol', () => {
-            const manualSignProvider = new ManualSignProvider(null, null, null);
             assert.rejects(() => {
                 return manualSignProvider.init({
                     workspaceId: 'dummyId',
@@ -153,7 +207,6 @@ describe('ManualSignProvider:', () => {
         });
 
         it('fails to initialize when network id option is empty', () => {
-            const manualSignProvider = new ManualSignProvider(null, null, null);
             assert.rejects(() => {
                 return manualSignProvider.init({
                     workspaceId: 'dummyId',
@@ -166,7 +219,6 @@ describe('ManualSignProvider:', () => {
         });
 
         it('fails to initialize when network id option is not a number', () => {
-            const manualSignProvider = new ManualSignProvider(null, null, null);
             assert.rejects(() => {
                 return manualSignProvider.init({
                     workspaceId: 'dummyId',
@@ -179,7 +231,6 @@ describe('ManualSignProvider:', () => {
         });
 
         it('fails to initialize when workspace id option is empty', () => {
-            const manualSignProvider = new ManualSignProvider(null, null, null);
             assert.rejects(() => {
                 return manualSignProvider.init({
                     workspaceId: '',
@@ -192,7 +243,6 @@ describe('ManualSignProvider:', () => {
         });
 
         it('fails to initialize when token option is empty', () => {
-            const manualSignProvider = new ManualSignProvider(null, null, null);
             assert.rejects(() => {
                 return manualSignProvider.init({
                     workspaceId: 'dummyId',
@@ -206,17 +256,21 @@ describe('ManualSignProvider:', () => {
     });
 
     describe('getAccounts:', () => {
+        let manualSignProvider: IManualSignProvider;
+
+        beforeEach(() => {
+            const client = new TestSuperblocksClient();
+            manualSignProvider = new ManualSignProvider(client, null, null);
+        });
+
         it('retrieves accounts successfully', async () => {
-            const manualSignProvider = new ManualSignProvider(null, null, null);
             const fromAddress = '0x3117958590752b0871548Dd8715b4C4c41372d3d';
-            assert.doesNotReject(() => {
-                return manualSignProvider.init({
-                    workspaceId: 'dummyId',
-                    token: 'dummyToken',
-                    from: fromAddress,
-                    endpoint: 'http://127.0.0.1',
-                    networkId: '1'
-                });
+            await manualSignProvider.init({
+                workspaceId: 'dummyId',
+                token: 'dummyToken',
+                from: fromAddress,
+                endpoint: 'http://127.0.0.1',
+                networkId: '1'
             });
 
             const accounts = await manualSignProvider.getAccounts();
@@ -224,9 +278,8 @@ describe('ManualSignProvider:', () => {
         });
 
         it('fails to retrieve accounts due to initialized provider', async () => {
-            const manualSignProvider = new ManualSignProvider(null, null, null);
             try {
-                const accounts = await manualSignProvider.getAccounts();
+                await manualSignProvider.getAccounts();
             } catch (e) {
                 assert.deepStrictEqual('TypeError: Cannot read property \'from\' of undefined', e.toString());
             }
@@ -234,8 +287,16 @@ describe('ManualSignProvider:', () => {
     });
 
     describe('sendMessage:', () => {
+        let manualSignProvider: IManualSignProvider;
+
+        beforeEach(() => {
+            const client = new TestSuperblocksClient();
+            const pusherClient = new TestPusherClient();
+            const rpcClient = new TestRpcClient();
+            manualSignProvider = new ManualSignProvider(client, pusherClient, rpcClient);
+        });
+
         it('successfully retrieve accounts', async () => {
-            const manualSignProvider = new ManualSignProvider(null, null, null);
             const fromAddress = '0x3117958590752b0871548Dd8715b4C4c41372d3d';
             assert.doesNotReject(() => {
                 return manualSignProvider.init({
@@ -259,7 +320,6 @@ describe('ManualSignProvider:', () => {
         });
 
         it('fails to retrieve accounts due to bad from address during initialization', async () => {
-            const manualSignProvider = new ManualSignProvider(null, null, null);
             const fromAddress = '0x1234567890';
             assert.rejects(() => {
                 return manualSignProvider.init({
@@ -283,7 +343,6 @@ describe('ManualSignProvider:', () => {
         });
 
         it('fails to retrieve accounts due to empty address during initialization', async () => {
-            const manualSignProvider = new ManualSignProvider(null, null, null);
             const fromAddress = '';
             assert.rejects(() => {
                 return manualSignProvider.init({
@@ -307,52 +366,6 @@ describe('ManualSignProvider:', () => {
         });
 
         it('successfully sends message via Rest API', async () => {
-            class TestSuperblocksClient implements ISuperblocksClient {
-                sendEthTransaction(releaseId: string, _token: string, transaction: ITransactionModel): Promise<ITransactionModel> {
-                    return Promise.resolve({
-                            id: '1234',
-                            releaseId,
-                            from: transaction.from,
-                            networkId: transaction.networkId,
-                            rpcPayload: {
-                                params: [],
-                                method: transaction.rpcPayload.method,
-                                id: transaction.rpcPayload.id,
-                                jsonrpc: transaction.rpcPayload.jsonrpc,
-                            }
-                    });
-                }
-
-                createRelease(workspaceId: string, token: string, networkId: string): Promise<IReleaseModel> {
-                    return new Promise((resolve, __) => {
-                        (workspaceId);
-                        (token);
-                        (networkId);
-                        return resolve({
-                            id: 'id',
-                        });
-                    });
-                }
-            }
-
-            class TestPusherClient implements IPusherClient {
-                subscribeToChannel(channelName: string, eventNames: [string], callback: (eventResponse: IEventResponse) => any): void {
-                    (channelName);
-                    (eventNames);
-                    callback({
-                        eventName: 'update_transaction',
-                        message: channelName
-                    });
-                }
-
-                unsubscribeFromChannel(channelName: string): void {
-                    (channelName);
-                }
-            }
-
-            const superblocksClient = new TestSuperblocksClient();
-            const pusherClient = new TestPusherClient();
-            const manualSignProvider = new ManualSignProvider(superblocksClient, pusherClient, null);
             const fromAddress = '0x3117958590752b0871548Dd8715b4C4c41372d3d';
             assert.doesNotReject(() => {
                 return manualSignProvider.init({
@@ -375,8 +388,8 @@ describe('ManualSignProvider:', () => {
         });
 
         it('fails to send message via Rest API due to Superblocks Client failure', async () => {
-            class TestSuperblocksClient implements ISuperblocksClient {
-                sendEthTransaction(releaseId: string, _token: string, transaction: ITransactionModel): Promise<ITransactionModel> {
+            class MockSuperblocksClient implements ISuperblocksClient {
+                sendEthTransaction(_releaseId: string, _token: string, _transaction: ITransactionModel): Promise<ITransactionModel> {
                     throw new Error('sendEthTransaction exception');
                 }
 
@@ -392,17 +405,16 @@ describe('ManualSignProvider:', () => {
                 }
             }
 
-            const superblocksClient = new TestSuperblocksClient();
-            const manualSignProvider = new ManualSignProvider(superblocksClient, null, null);
+            const superblocksClient = new MockSuperblocksClient();
+            manualSignProvider = new ManualSignProvider(superblocksClient, null, null);
             const fromAddress = '0x3117958590752b0871548Dd8715b4C4c41372d3d';
-            assert.doesNotReject(() => {
-                return manualSignProvider.init({
-                    workspaceId: 'dummyId',
-                    token: 'dummyToken',
-                    from: fromAddress,
-                    endpoint: 'http://127.0.0.1',
-                    networkId: '1'
-                });
+
+            await manualSignProvider.init({
+                workspaceId: 'dummyId',
+                token: 'dummyToken',
+                from: fromAddress,
+                endpoint: 'http://127.0.0.1',
+                networkId: '1'
             });
 
             await assert.rejects(() => {
@@ -416,52 +428,6 @@ describe('ManualSignProvider:', () => {
         });
 
         it('successfully signs message via Rest API', async () => {
-            class TestSuperblocksClient implements ISuperblocksClient {
-                sendEthTransaction(releaseId: string, _token: string, transaction: ITransactionModel): Promise<ITransactionModel> {
-                    return Promise.resolve({
-                        id: '1234',
-                        releaseId,
-                        from: transaction.from,
-                        networkId: transaction.networkId,
-                        rpcPayload: {
-                            params: [],
-                            method: transaction.rpcPayload.method,
-                            id: transaction.rpcPayload.id,
-                            jsonrpc: transaction.rpcPayload.jsonrpc,
-                        }
-                    });
-                }
-
-                createRelease(workspaceId: string, token: string, networkId: string): Promise<IReleaseModel> {
-                    return new Promise(async (resolve, __) => {
-                        (workspaceId);
-                        (token);
-                        (networkId);
-                        return resolve({
-                            id: 'id',
-                        });
-                    });
-                }
-            }
-
-            class TestPusherClient implements IPusherClient {
-                subscribeToChannel(channelName: string, eventNames: [string], callback: (eventResponse: IEventResponse) => any): void {
-                    (channelName);
-                    (eventNames);
-                    callback({
-                        eventName: 'update_transaction',
-                        message: channelName
-                    });
-                }
-
-                unsubscribeFromChannel(channelName: string): void {
-                    (channelName);
-                }
-            }
-
-            const superblocksClient = new TestSuperblocksClient();
-            const pusherClient = new TestPusherClient();
-            const manualSignProvider = new ManualSignProvider(superblocksClient, pusherClient, null);
             const fromAddress = '0x3117958590752b0871548Dd8715b4C4c41372d3d';
             assert.doesNotReject(() => {
                 return manualSignProvider.init({
@@ -484,182 +450,109 @@ describe('ManualSignProvider:', () => {
         });
 
         it('successfully sends message via RPC', async () => {
-            class TestRpcClient implements IRpcClient {
-                sendRpcJsonCall(endpoint: string, payload: JSONRPCRequestPayload): Promise<any> {
-                    return new Promise(async (resolve, _) => {
-                        (endpoint);
-                        (payload);
-                        return resolve([]);
-                    });
-                }
-            }
-
-            const rpcClient = new TestRpcClient();
-            const manualSignProvider = new ManualSignProvider(null, null, rpcClient);
             const fromAddress = '0x3117958590752b0871548Dd8715b4C4c41372d3d';
-            assert.doesNotReject(() => {
-                return manualSignProvider.init({
-                    workspaceId: 'dummyId',
-                    token: 'dummyToken',
-                    from: fromAddress,
-                    endpoint: 'http://127.0.0.1',
-                    networkId: '1'
-                });
+            await manualSignProvider.init({
+                workspaceId: 'dummyId',
+                token: 'dummyToken',
+                from: fromAddress,
+                endpoint: 'http://127.0.0.1',
+                networkId: '1'
             });
 
-            await assert.doesNotReject( async () => {
-                const promise = manualSignProvider.sendMessage({
-                    jsonrpc: 'eth_test',
-                    id: 0,
-                    method: 'eth_test',
-                    params: ['test'],
-                }, '0');
-                return promise;
-            });
+            await manualSignProvider.sendMessage({
+                jsonrpc: 'eth_test',
+                id: 0,
+                method: 'eth_test',
+                params: ['test'],
+            }, '0');
         });
     });
 
     describe('send:', () => {
+        let manualSignProvider: IManualSignProvider;
+
+        beforeEach(() => {
+            const client = new TestSuperblocksClient();
+            const pusherClient = new TestPusherClient();
+            const rpcClient = new TestRpcClient();
+            manualSignProvider = new ManualSignProvider(client, pusherClient, rpcClient);
+        });
+
         it('successfully retrieve accounts', async () => {
-            const manualSignProvider = new ManualSignProvider(null, null, null);
             const fromAddress = '0x3117958590752b0871548Dd8715b4C4c41372d3d';
-            assert.doesNotReject(() => {
-                return manualSignProvider.init({
-                    workspaceId: 'dummyId',
-                    token: 'dummyToken',
-                    from: fromAddress,
-                    endpoint: 'http://127.0.0.1',
-                    networkId: '1'
-                });
+
+            await manualSignProvider.init({
+                workspaceId: 'dummyId',
+                token: 'dummyToken',
+                from: fromAddress,
+                endpoint: 'http://127.0.0.1',
+                networkId: '1'
             });
 
-            await assert.doesNotReject(() => {
-                return manualSignProvider.send({
-                    jsonrpc: 'eth_test',
-                    id: 0,
-                    method: 'eth_accounts',
-                    params: [],
-                });
+            await manualSignProvider.send({
+                jsonrpc: 'eth_test',
+                id: 0,
+                method: 'eth_accounts',
+                params: [],
             });
         });
 
         it('successfully sends message via Rest API', async () => {
-            class TestSuperblocksClient implements ISuperblocksClient {
-                sendEthTransaction(releaseId: string, _token: string, transaction: ITransactionModel): Promise<ITransactionModel> {
-                    return new Promise(async (resolve, _) => {
-                        return resolve({
-                            id: '1234',
-                            releaseId,
-                            from: transaction.from,
-                            networkId: transaction.networkId,
-                            rpcPayload: {
-                                params: [],
-                                method: transaction.rpcPayload.method,
-                                id: transaction.rpcPayload.id,
-                                jsonrpc: transaction.rpcPayload.jsonrpc,
-                            }
-                        });
-                    });
-                }
-
-                createRelease(workspaceId: string, token: string, networkId: string): Promise<IReleaseModel> {
-                    return new Promise(async (resolve, __) => {
-                        (workspaceId);
-                        (token);
-                        (networkId);
-                        return resolve({
-                            id: 'id',
-                        });
-                    });
-                }
-            }
-
-            class TestPusherClient implements IPusherClient {
-                subscribeToChannel(channelName: string, eventNames: [string], callback: (eventResponse: IEventResponse) => any): void {
-                    (channelName);
-                    (eventNames);
-                    callback({
-                        eventName: 'update_transaction',
-                        message: channelName
-                    });
-                }
-
-                unsubscribeFromChannel(channelName: string): void {
-                    (channelName);
-                }
-            }
-
-            const superblocksClient = new TestSuperblocksClient();
-            const pusherClient = new TestPusherClient();
-            const manualSignProvider = new ManualSignProvider(superblocksClient, pusherClient, null);
             const fromAddress = '0x3117958590752b0871548Dd8715b4C4c41372d3d';
-            assert.doesNotReject(() => {
-                return manualSignProvider.init({
-                    workspaceId: 'dummyId',
-                    token: 'dummyToken',
-                    from: fromAddress,
-                    endpoint: 'http://127.0.0.1',
-                    networkId: '1'
-                });
+
+            await manualSignProvider.init({
+                workspaceId: 'dummyId',
+                token: 'dummyToken',
+                from: fromAddress,
+                endpoint: 'http://127.0.0.1',
+                networkId: '1'
             });
 
-            await assert.doesNotReject(() => {
-                return manualSignProvider.send({
-                    jsonrpc: 'eth_test',
-                    id: 0,
-                    method: 'eth_sendTransaction',
-                    params: [],
-                });
+            await manualSignProvider.send({
+                jsonrpc: 'eth_test',
+                id: 0,
+                method: 'eth_sendTransaction',
+                params: [],
             });
         });
 
         it('successfully sends message via RPC', async () => {
-            class TestRpcClient implements IRpcClient {
-                sendRpcJsonCall(endpoint: string, payload: JSONRPCRequestPayload): Promise<any> {
-                    return new Promise(async (resolve, _) => {
-                        (endpoint);
-                        (payload);
-                        return resolve([]);
-                    });
-                }
-            }
-
-            const rpcClient = new TestRpcClient();
-            const manualSignProvider = new ManualSignProvider(null, null, rpcClient);
             const fromAddress = '0x3117958590752b0871548Dd8715b4C4c41372d3d';
-            assert.doesNotReject(() => {
-                return manualSignProvider.init({
-                    workspaceId: 'dummyId',
-                    token: 'dummyToken',
-                    from: fromAddress,
-                    endpoint: 'http://127.0.0.1',
-                    networkId: '1'
-                });
+            await manualSignProvider.init({
+                workspaceId: 'dummyId',
+                token: 'dummyToken',
+                from: fromAddress,
+                endpoint: 'http://127.0.0.1',
+                networkId: '1'
             });
 
-            await assert.doesNotReject(() => {
-                return manualSignProvider.send({
-                    jsonrpc: 'eth_test',
-                    id: 0,
-                    method: 'eth_test',
-                    params: ['test'],
-                });
+            await manualSignProvider.send({
+                jsonrpc: 'eth_test',
+                id: 0,
+                method: 'eth_test',
+                params: ['test'],
             });
         });
     });
 
     describe('sendAsync:', () => {
-        it('successfully retrieve accounts', (done) => {
-            const manualSignProvider = new ManualSignProvider(null, null, null);
+        let manualSignProvider: IManualSignProvider;
+
+        beforeEach(() => {
+            const client = new TestSuperblocksClient();
+            const pusherClient = new TestPusherClient();
+            const rpcClient = new TestRpcClient();
+            manualSignProvider = new ManualSignProvider(client, pusherClient, rpcClient);
+        });
+
+        it('successfully retrieve accounts', async () => {
             const fromAddress = '0x3117958590752b0871548Dd8715b4C4c41372d3d';
-            assert.doesNotReject(() => {
-                return manualSignProvider.init({
-                    workspaceId: 'dummyId',
-                    token: 'dummyToken',
-                    from: fromAddress,
-                    endpoint: 'http://127.0.0.1',
-                    networkId: '1'
-                });
+            await manualSignProvider.init({
+                workspaceId: 'dummyId',
+                token: 'dummyToken',
+                from: fromAddress,
+                endpoint: 'http://127.0.0.1',
+                networkId: '1'
             });
 
             manualSignProvider.sendAsync({
@@ -670,68 +563,17 @@ describe('ManualSignProvider:', () => {
             }, (err: Error | null, result?: JSONRPCResponsePayload) => {
                 assert.deepStrictEqual(null, err);
                 assert.notDeepStrictEqual(null, result);
-                done();
             });
         });
 
-        it('successfully sends message via Rest API', (done) => {
-            class TestSuperblocksClient implements ISuperblocksClient {
-                sendEthTransaction(releaseId: string, _token: string, transaction: ITransactionModel): Promise<ITransactionModel> {
-                    return new Promise(async (resolve, _) => {
-                        return resolve({
-                            id: '1234',
-                            releaseId,
-                            from: transaction.from,
-                            networkId: transaction.networkId,
-                            rpcPayload: {
-                                params: [],
-                                method: transaction.rpcPayload.method,
-                                id: transaction.rpcPayload.id,
-                                jsonrpc: transaction.rpcPayload.jsonrpc,
-                            }
-                        });
-                    });
-                }
-
-                createRelease(workspaceId: string, token: string, networkId: string): Promise<IReleaseModel> {
-                    return new Promise(async (resolve, __) => {
-                        (workspaceId);
-                        (token);
-                        (networkId);
-                        return resolve({
-                            id: 'id',
-                        });
-                    });
-                }
-            }
-
-            class TestPusherClient implements IPusherClient {
-                subscribeToChannel(channelName: string, eventNames: [string], callback: (eventResponse: IEventResponse) => any): void {
-                    (channelName);
-                    (eventNames);
-                    callback({
-                        eventName: 'update_transaction',
-                        message: channelName
-                    });
-                }
-
-                unsubscribeFromChannel(channelName: string): void {
-                    (channelName);
-                }
-            }
-
-            const superblocksClient = new TestSuperblocksClient();
-            const pusherClient = new TestPusherClient();
-            const manualSignProvider = new ManualSignProvider(superblocksClient, pusherClient, null);
+        it('successfully sends message via Rest API', async () => {
             const fromAddress = '0x3117958590752b0871548Dd8715b4C4c41372d3d';
-            assert.doesNotReject(() => {
-                return manualSignProvider.init({
-                    workspaceId: 'dummyId',
-                    token: 'dummyToken',
-                    from: fromAddress,
-                    endpoint: 'http://127.0.0.1',
-                    networkId: '1'
-                });
+            await manualSignProvider.init({
+                workspaceId: 'dummyId',
+                token: 'dummyToken',
+                from: fromAddress,
+                endpoint: 'http://127.0.0.1',
+                networkId: '1'
             });
 
             manualSignProvider.sendAsync({
@@ -742,28 +584,13 @@ describe('ManualSignProvider:', () => {
             }, (err: Error | null, result?: JSONRPCResponsePayload) => {
                 assert.deepStrictEqual(null, err);
                 assert.notDeepStrictEqual(null, result);
-                done();
             });
         });
 
-        it('fails to send message via Rest API due to Superblocks Client failure', (done) => {
-            class TestSuperblocksClient implements ISuperblocksClient {
-                sendEthTransaction(releaseId: string, _token: string, transaction: ITransactionModel): Promise<ITransactionModel> {
+        it('fails to send message via Rest API due to Superblocks Client failure', async () => {
+            class MockSuperblocksClient implements ISuperblocksClient {
+                sendEthTransaction(_releaseId: string, _token: string, _transaction: ITransactionModel): Promise<ITransactionModel> {
                     throw new Error('sendEthTransaction exception');
-                    return new Promise(async (resolve, _) => {
-                        return resolve({
-                            id: '1234',
-                            releaseId,
-                            from: transaction.from,
-                            networkId: transaction.networkId,
-                            rpcPayload: {
-                                params: [],
-                                method: transaction.rpcPayload.method,
-                                id: transaction.rpcPayload.id,
-                                jsonrpc: transaction.rpcPayload.jsonrpc,
-                            }
-                        });
-                    });
                 }
 
                 createRelease(workspaceId: string, token: string, networkId: string): Promise<IReleaseModel> {
@@ -778,17 +605,16 @@ describe('ManualSignProvider:', () => {
                 }
             }
 
-            const superblocksClient = new TestSuperblocksClient();
-            const manualSignProvider = new ManualSignProvider(superblocksClient, null, null);
+            const superblocksClient = new MockSuperblocksClient();
+            manualSignProvider = new ManualSignProvider(superblocksClient, null, null);
             const fromAddress = '0x3117958590752b0871548Dd8715b4C4c41372d3d';
-            assert.doesNotReject(() => {
-                return manualSignProvider.init({
-                    workspaceId: 'dummyId',
-                    token: 'dummyToken',
-                    from: fromAddress,
-                    endpoint: 'http://127.0.0.1',
-                    networkId: '1'
-                });
+
+            await manualSignProvider.init({
+                workspaceId: 'dummyId',
+                token: 'dummyToken',
+                from: fromAddress,
+                endpoint: 'http://127.0.0.1',
+                networkId: '1'
             });
 
             manualSignProvider.sendAsync({
@@ -799,32 +625,17 @@ describe('ManualSignProvider:', () => {
             }, (err: Error | null, result?: JSONRPCResponsePayload) => {
                 assert.deepStrictEqual('sendEthTransaction exception', err.toString());
                 assert.deepStrictEqual(null, result);
-                done();
             });
         });
 
-        it('successfully sends message via RPC', (done) => {
-            class TestRpcClient implements IRpcClient {
-                sendRpcJsonCall(endpoint: string, payload: JSONRPCRequestPayload): Promise<any> {
-                    return new Promise(async (resolve, _) => {
-                        (endpoint);
-                        (payload);
-                        return resolve([]);
-                    });
-                }
-            }
-
-            const rpcClient = new TestRpcClient();
-            const manualSignProvider = new ManualSignProvider(null, null, rpcClient);
+        it('successfully sends message via RPC', async () => {
             const fromAddress = '0x3117958590752b0871548Dd8715b4C4c41372d3d';
-            assert.doesNotReject(() => {
-                return manualSignProvider.init({
-                    workspaceId: 'dummyId',
-                    token: 'dummyToken',
-                    from: fromAddress,
-                    endpoint: 'http://127.0.0.1',
-                    networkId: '1'
-                });
+            await manualSignProvider.init({
+                workspaceId: 'dummyId',
+                token: 'dummyToken',
+                from: fromAddress,
+                endpoint: 'http://127.0.0.1',
+                networkId: '1'
             });
 
             manualSignProvider.sendAsync({
@@ -835,13 +646,15 @@ describe('ManualSignProvider:', () => {
             }, (err: Error | null, result?: JSONRPCResponsePayload) => {
                 assert.deepStrictEqual(null, err);
                 assert.notDeepStrictEqual(null, result);
-                done();
             });
         });
     });
 
     it('check all the possibilities to init the provider', () => {
-        const manualSignProvider = new ManualSignProvider(null, null, null);
+        const client = new TestSuperblocksClient();
+        const pusherClient = new TestPusherClient();
+        const rpcClient = new TestRpcClient();
+        const manualSignProvider = new ManualSignProvider(client, pusherClient, rpcClient);
 
         assert.rejects(() => manualSignProvider.init({ workspaceId: '', token: '', from: '', endpoint: '', networkId: '' }));
         assert.rejects(() => manualSignProvider.init({ workspaceId: 'dummy', token: '', from: '', endpoint: '', networkId: '' }));
