@@ -13,25 +13,31 @@
 //
 // You should have received a copy of the GNU General Public License
 // along with Superblocks.  If not, see <http://www.gnu.org/licenses/>.
-import fetch from 'node-fetch';
-import { ITransactionModel } from './models';
-import { getApiBaseUrl } from './utils';
+// import fetch from 'node-fetch';
+import { ITransactionModel, IReleaseModel } from './models';
+import { injectable, inject } from 'inversify';
+import { TYPES } from '../ioc/types';
+import { Fetch, ISuperblocksUtils, ISuperblocksClient } from '../ioc/interfaces';
 
-/**
- * Communication client for Superblocks API.
- */
-export interface ISuperblocksClient {
-    sendEthTransaction(transaction: ITransactionModel): Promise<ITransactionModel>;
-}
+@injectable()
+export class SuperblocksClient implements ISuperblocksClient {
+    private fetch: Fetch;
+    private utils: ISuperblocksUtils;
 
-export const superblocksClient: ISuperblocksClient = {
+    public constructor(
+        @inject(TYPES.Fetch) fetch: Fetch,
+        @inject(TYPES.SuperblocksUtils) utils: ISuperblocksUtils,
+    ) {
+        this.fetch = fetch;
+        this.utils = utils;
+    }
 
-    async sendEthTransaction(transaction: ITransactionModel): Promise<ITransactionModel> {
-        console.log(`${getApiBaseUrl()}/transactions`);
-        const response = await fetch(`${getApiBaseUrl()}/transactions`, {
+    async sendEthTransaction(releaseId: string, token: string, transaction: ITransactionModel): Promise<ITransactionModel> {
+        const response = await this.fetch(`${this.utils.getApiBaseUrl()}/releases/${releaseId}/transactions`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
+                'project-token': token
             },
             body: JSON.stringify(transaction)
         });
@@ -44,5 +50,28 @@ export const superblocksClient: ISuperblocksClient = {
             console.log(await response.text());
             throw new Error('[Superblocks client] cannot create send transaction to the web3 hub');
         }
-    },
-};
+    }
+
+    async createRelease(workspaceId: string, token: string, environment: string): Promise<IReleaseModel> {
+        const response = await this.fetch(`${this.utils.getApiBaseUrl()}/workspaces/${workspaceId}/releases/`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'project-token': token
+            },
+            body: JSON.stringify({
+                environment,
+                type: 'ethereum'
+            })
+        });
+
+        if (response.ok) {
+            const release = await response.json();
+            console.log('[Superblocks client] release created', release);
+            return release;
+        } else {
+            const error = await response.text();
+            throw new Error(`[Superblocks client] cannot create a release: ${error}`);
+        }
+    }
+}

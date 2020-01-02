@@ -14,10 +14,17 @@
 // You should have received a copy of the GNU General Public License
 // along with Superblocks.  If not, see <http://www.gnu.org/licenses/>.
 
-export const getApiBaseUrl = () => {
-    if (process.env.DEBUG) {
-        return 'http://localhost:2999/v1';
-    } else {
-        return `https://api-dev.superblocks.com/v1`;
+import { injectable } from 'inversify';
+import { ISuperblocksUtils } from '../ioc/interfaces';
+
+@injectable()
+export class SuperblocksUtils implements ISuperblocksUtils {
+    getApiBaseUrl() {
+        if (process.env.DEBUG) {
+            return 'http://localhost:2999/v1';
+        } else {
+            return `https://api-dev.superblocks.com/v1`;
+        }
     }
-};
+}
+

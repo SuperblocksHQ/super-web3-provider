@@ -1,13 +1,13 @@
 {
   "name": "super-web3-provider",
-  "version": "0.0.1-beta.12",
-  "description": "Web3 provider to create a secure channel between our CI runners and the Superblocks platform to handle Smart Contract deployments through our blockchain dedicated CI/CD platform",
+  "version": "0.0.1-beta.13",
+  "description": "Web3 provider to create a secure channel between our CI runners and the Superblocks platform to handle Smart Contract deployments through our blockchain dedicated DevOps platform",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {
-    "build": "tsc",
+    "build": "rm -rf dist && tsc",
     "publish-lib": "node publish.js",
-    "test": "mocha --require ts-node/register --exit src/**/*spec.ts src/*spec.ts"
+    "test": "mocha --require ts-node/register --exit src/**/*spec.ts"
   },
   "repository": {
     "type": "git",
@@ -20,18 +20,25 @@
   },
   "homepage": "https://gitlab.com/superblocks/super-web3-provider#readme",
   "devDependencies": {
+    "@types/bn.js": "^4.11.5",
+    "@types/ethereum-protocol": "^1.0.0",
     "@types/mocha": "^5.2.7",
     "@types/node": "^12.12.5",
     "@types/node-fetch": "^2.5.3",
     "@types/pusher-js": "^4.2.2",
+    "fetch-mock": "^8.0.1",
     "mocha": "^6.2.2",
     "ts-node": "^8.5.4",
-    "typescript": "^3.5.1",
-    "webpack": "^4.31.0",
-    "webpack-cli": "^3.3.2"
+    "ts-sinon": "^1.0.24",
+    "typescript": "^3.5.1"
   },
   "dependencies": {
+    "ethereum-protocol": "^1.0.1",
+    "inversify": "^5.0.1",
     "node-fetch": "^2.6.0",
-    "pusher-js": "5.0.2 "
+    "ora": "^4.0.3",
+    "pusher-js": "5.0.2 ",
+    "reflect-metadata": "^0.1.13",
+    "web3-utils": "^1.2.4"
   }
 }

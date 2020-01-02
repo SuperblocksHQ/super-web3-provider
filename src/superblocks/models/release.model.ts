@@ -14,7 +14,6 @@
 // You should have received a copy of the GNU General Public License
 // along with Superblocks.  If not, see <http://www.gnu.org/licenses/>.
 
-export * from './transaction.model';
-export * from './apiError.model';
-export * from './transaction-params.model';
-export * from './release.model';
+export interface IReleaseModel {
+    id: string;
+}

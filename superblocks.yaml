@@ -1,5 +1,11 @@
 version: 1
 jobs:
+  run_tests:
+    image: node:10
+    script:
+      - npm i
+      - npm run test
+
   deploy_to_npm:
     image: node:10
     script:
@@ -10,6 +16,9 @@ jobs:
       - npm run publish-lib 
 
 stages:
+  - test:
+      jobs:
+        - run_tests
   - deploy:
       jobs:
         - deploy_to_npm:

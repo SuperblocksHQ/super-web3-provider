@@ -1,6 +1,8 @@
 {
     "compilerOptions": {
         "target": "es5",
+        "lib": ["es6"],
+        "types": ["reflect-metadata", "mocha"],
         "module": "commonjs",
         "declaration": true,
         "noImplicitAny": true,
@@ -10,11 +12,12 @@
         "outDir": "dist",
         "noUnusedLocals": true,
         "noUnusedParameters": true,
-        "esModuleInterop": true
+        "esModuleInterop": true,
     },
     "exclude": [
         "node_modules",
-        "dist"
+        "dist",
+        "src/**/*.spec.ts"
     ],
     "include": [
         "src/**/*.ts"

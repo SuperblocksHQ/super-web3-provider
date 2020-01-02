@@ -14,225 +14,123 @@
 // You should have received a copy of the GNU General Public License
 // along with Superblocks.  If not, see <http://www.gnu.org/licenses/>.
 
-import { IEventResponse } from './pusher.client';
-import pusherClient = require('./pusher.client');
-import Pusher, { Channel, EventCallback } from 'pusher-js';
+import 'reflect-metadata';
 import * as assert from 'assert';
+import * as sinon from 'ts-sinon';
+import { SinonSandbox } from 'sinon';
+import { IPusherClient, IEventResponse } from '../ioc/interfaces';
+import { EventCallback } from 'pusher-js';
+import { PusherClient } from './pusher.client';
 
-// Mock Channel class used by Pusher
-class ChannelMock implements Channel{
-    name: string;
-    pusher: Pusher.Pusher;
-    subscribed: boolean;
+let pusherClient: IPusherClient;
 
-    emit(eventName: string, data?: any): any {
-        (eventName);
-        (data);
-    }
+const mockChannel = <Pusher.Channel> {
+    bind(_eventName: string, callback: EventCallback, context?: any): any {
+        callback(context, 'Some Data');
+    },
 
-    authorize(socketId : string, callback : Function) {
-        (socketId);
-        callback();
-    }
+    unbind(_eventName: string, callback: EventCallback, context?: any): any {
+        callback(context, 'Some Data');
+    },
+};
 
-    trigger(event : string, data : any): boolean {
-        (event);
-        (data);
-        return false;
-    }
-
-    bind(eventName: string, callback: EventCallback, context?: any): any {
-        (eventName);
-        callback(context, null);
-    }
-
-    unbind(eventName?: string, callback?: Function, context?: any): any {
-        (eventName);
-        (context);
-        (callback);
-    }
-
-    bind_global(callback: Function): any {
-        callback();
-    }
-
-    unbind_global(callback?: Function): any {
-        (callback);
-    }
-
-    unbind_all(callback?: Function): any {
-        (callback);
+const mockPusher = <Pusher.Pusher> {
+    subscribe: (_channelName: string) => {
+        return mockChannel;
     }
 };
 
-// Mock Pusher client class
-class PusherMock extends Pusher{
-    subscribe(channelName: string): Channel {
-        (channelName);
-        return new ChannelMock();
-    }
-};
+describe('PusherClient:', () => {
+    let sandbox: SinonSandbox;
 
-describe('connectToPusher', () => {
     beforeEach(() => {
-        // Reset reference to original condition to disallow access
-        // to potentially valid connection outside the test scope
-        if(pusherClient.pusher) {
-            pusherClient.pusher.disconnect();
-            pusherClient.pusher = undefined;
-        }
+        // Remove console logs to make the test results cleaner
+        sandbox = sinon.default.createSandbox();
+        sandbox.stub(console, 'log');
     });
 
-    it('successfully instantiates a new connection object', () => {
-        assert.deepStrictEqual(pusherClient.pusher, undefined);
-        assert.doesNotThrow( () => {
-            pusherClient.connectToPusher();
+    afterEach(() => {
+        sandbox.restore();
+    });
+
+    describe('Test subscribeToChannel', () => {
+        beforeEach(() => {
+            pusherClient = new PusherClient(mockPusher);
         });
-        assert.notDeepStrictEqual(pusherClient.pusher, undefined);
-    });
 
-    it.skip('fails to create valid Pusher object due to bad identification key', () => {
-    });
-
-    it.skip('fails to create valid Pusher object due to wrong cluster setting', () => {
-    });
-});
-
-describe('subscribeToChannel', () => {
-    beforeEach(() => {
-        // Reset reference to original condition to disallow access
-        // to potentially valid connection outside the test scope
-        if(pusherClient.pusher) {
-            pusherClient.pusher.disconnect();
-            pusherClient.pusher = undefined;
-        }
-
-        assert.deepStrictEqual(pusherClient.pusher, undefined);
-        pusherClient.pusher = new PusherMock('test-subscribe');
-        assert.notDeepStrictEqual(pusherClient.pusher, undefined);
-    });
-
-    it.skip('checks subscribed channels data is empty at the start', () => {
-    });
-
-    it('fails to subscribe to channel due to disconnected pusher object', () => {
-        // Disconnect and unset pusher reference before proceeding
-        if(pusherClient.pusher) {
-            pusherClient.pusher.disconnect();
-            pusherClient.pusher = undefined;
-        }
-
-        assert.throws( () => {
-            pusherClient.subscribeToChannel('test-fail-to-subscribe-channel', ['test-fail-to-subscribe-event'], (eventResponse: IEventResponse) => {
-                assert.fail('fail to subscribe callback: ', eventResponse);
+        it('subscribes to channel', (done) => {
+            assert.doesNotThrow(() => {
+                pusherClient.subscribeToChannel('test-channel', ['test_event'],
+                    (eventResponse: IEventResponse) => {
+                        assert.deepStrictEqual(eventResponse.eventName, 'test_event');
+                        assert.deepStrictEqual(eventResponse.message, undefined);
+                        done();
+                    }
+                );
             });
-        }, {
-            name: 'TypeError',
-            message: 'Cannot read property \'subscribe\' of undefined'
         });
-    });
 
-    it('subscribes to channel', (done) => {
-        assert.doesNotThrow( () => {
-            pusherClient.subscribeToChannel('test-channel', ['test_event'],
-                (eventResponse: IEventResponse) => {
-                    assert.deepStrictEqual(eventResponse.eventName, 'test_event');
-                    assert.deepStrictEqual(eventResponse.message, undefined);
-                    done();
+        it('checks subscriptions only map to specified entry in eventNames', (done) => {
+            // Keep track of calls to channel bind method
+            let bindCount = 0;
+            const modifiedMockChannel = <Pusher.Channel> {
+                bind(_eventName: string, callback: EventCallback, context?: any): any {
+                    bindCount++;
+                    callback(context, 'Some Data');
+                },
+            };
+
+            const modifiedMockPusher = <Pusher.Pusher> {
+                subscribe: (_channelName: string) => {
+                    return modifiedMockChannel;
                 }
-            );
+            };
+
+            pusherClient = new PusherClient(modifiedMockPusher);
+
+            let currentBindCount = 0;
+            assert.doesNotThrow(() => {
+                pusherClient.subscribeToChannel('test-channel', ['entry'],
+                    (eventResponse: IEventResponse) => {
+                        currentBindCount++;
+                        assert.notDeepStrictEqual(eventResponse, undefined);
+                        assert.deepStrictEqual(currentBindCount, bindCount);
+                        done();
+                    }
+                );
+            });
         });
     });
 
-    it.skip('successfully unsubscribes before overwriting existing channelName in subscribedChannels', () => {
-    });
+    describe('Test unsubscribeFromChannel', () => {
+        beforeEach(() => {
+            pusherClient = new PusherClient(mockPusher);
+        });
 
-    it.skip('checks subscribedChannels changes after successful subscription', () => {
-    });
+        it('successfully unsubscribes from previously subscribed channelName', (done) => {
+            assert.doesNotThrow( () => {
+                pusherClient.subscribeToChannel('test-channel', ['test_event'],
+                    (eventResponse: IEventResponse) => {
+                        assert.deepStrictEqual(eventResponse.eventName, 'test_event');
+                        assert.deepStrictEqual(eventResponse.message, undefined);
+                        done();
+                    }
+                );
+            });
 
-    it.skip('checks subscribedChannels remains unchanged after subscription failure', () => {
-    });
+            const spy = sinon.default.spy(mockChannel, 'unbind');
+            sinon.default.assert.calledOnce(spy);
 
-    it('checks subscriptions only map to specified entry in eventNames', (done) => {
-        // Keep track of calls to channel bind method
-        let bindCount = 0;
+            assert.doesNotThrow( () => {
+                pusherClient.unsubscribeFromChannel('test-channel');
+            });
+        });
 
-        // Modify Channel class used by Pusher to keep track of calls to bind method
-        class ChannelMockModifiedBind extends ChannelMock {
-            bind(eventName: string, callback: EventCallback, context?: any): any {
-                (eventName);
-                bindCount++;
-                callback(context, null);
-            }
-        }
-
-        // Modify Pusher client to use the modified Channel class
-        class PusherMockModifiedBind extends PusherMock {
-            subscribe(channelName: string): Channel {
-                (channelName);
-                return new ChannelMockModifiedBind();
-            }
-        };
-
-        pusherClient.pusher = new PusherMockModifiedBind('test-map-entry');
-        assert.notDeepStrictEqual(pusherClient.pusher, undefined);
-
-        let currentBindCount = 0;
-        assert.doesNotThrow( () => {
-            pusherClient.subscribeToChannel('test-channel', ['entry'],
-                (eventResponse: IEventResponse) => {
-                    currentBindCount++;
-                    assert.notDeepStrictEqual(eventResponse, undefined);
-                    assert.deepStrictEqual(currentBindCount, bindCount);
-                    done();
-                }
-            );
+        it('tries to unsubscribe from unknown channelName', () => {
+            assert.doesNotThrow( () => {
+                pusherClient.unsubscribeFromChannel('test-channel-unknown');
+            });
         });
     });
 
-    it.skip('checks subscriptions do not link to unspecified eventNames', () => {
-    });
-
-    it.skip('fails to subscribe to channel without binding to any event', () => {
-    });
-});
-
-describe('unsubscribeFromChannel', () => {
-    beforeEach( () => {
-        // Reset reference to original condition to disallow access
-        // to potentially valid connection outside the test scope
-        if(pusherClient.pusher) {
-            pusherClient.pusher.disconnect();
-            pusherClient.pusher = undefined;
-        }
-
-        assert.deepStrictEqual(pusherClient.pusher, undefined);
-        pusherClient.pusher = new PusherMock('test-unsubscribe');
-        assert.notDeepStrictEqual(pusherClient.pusher, undefined);
-    });
-
-    it('successfully unsubscribes from previously subscribed channelName', (done) => {
-        assert.doesNotThrow( () => {
-            pusherClient.subscribeToChannel('test-channel', ['test_event'],
-                (eventResponse: IEventResponse) => {
-                    assert.deepStrictEqual(eventResponse.eventName, 'test_event');
-                    assert.deepStrictEqual(eventResponse.message, undefined);
-                    done();
-                }
-            );
-        });
-
-        assert.doesNotThrow( () => {
-            pusherClient.unsubscribeFromChannel('test-channel');
-        });
-    });
-
-    it.skip('checks subscribedChannels gets empty after unsubscription', () => {
-    });
-
-    it('tries to unsubscribe from unknown channelName', () => {
-        assert.doesNotThrow( () => {
-            pusherClient.unsubscribeFromChannel('test-channel');
-        });
-    });
 });
