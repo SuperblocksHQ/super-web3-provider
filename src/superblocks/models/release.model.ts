@@ -16,8 +16,4 @@
 
 export interface IReleaseModel {
     id: string;
-    workspaceId: string;
-    createdAt: Date;
-    updatedAt: Date;
-    environment: string;
 }

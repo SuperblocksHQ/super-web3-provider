@@ -14,7 +14,7 @@
 // You should have received a copy of the GNU General Public License
 // along with Superblocks.  If not, see <http://www.gnu.org/licenses/>.
 // import fetch from 'node-fetch';
-import { ITransactionModel } from './models';
+import { ITransactionModel, IReleaseModel } from './models';
 import { injectable, inject } from 'inversify';
 import { TYPES } from '../ioc/types';
 import { Fetch, ISuperblocksUtils, ISuperblocksClient } from '../ioc/interfaces';
@@ -52,7 +52,7 @@ export class SuperblocksClient implements ISuperblocksClient {
         }
     }
 
-    async createRelease(workspaceId: string, token: string, environment: string): Promise<ITransactionModel> {
+    async createRelease(workspaceId: string, token: string, environment: string): Promise<IReleaseModel> {
         const response = await this.fetch(`${this.utils.getApiBaseUrl()}/workspaces/${workspaceId}/releases/`, {
             method: 'POST',
             headers: {
@@ -66,9 +66,9 @@ export class SuperblocksClient implements ISuperblocksClient {
         });
 
         if (response.ok) {
-            const tx = await response.json();
-            console.log('[Superblocks client] release created', tx);
-            return tx;
+            const release = await response.json();
+            console.log('[Superblocks client] release created', release);
+            return release;
         } else {
             const error = await response.text();
             throw new Error(`[Superblocks client] cannot create a release: ${error}`);

@@ -19,7 +19,7 @@ import * as sinon from 'ts-sinon';
 import * as assert from 'assert';
 import fetchMock, { MockResponse } from 'fetch-mock';
 import { ISuperblocksClient, ISuperblocksUtils } from '../ioc/interfaces';
-import { ITransactionModel, ITransactionParamsModel } from './models';
+import { ITransactionModel, ITransactionParamsModel, IReleaseModel } from './models';
 import { SinonSandbox } from 'sinon';
 import { SuperblocksClient } from './superblocks.client';
 
@@ -99,15 +99,19 @@ describe('SuperblocksClient:', () => {
             const mockFetch = fetchMock.sandbox().post(`https://some-url/workspaces/${workspaceId}/releases/`,
                 <MockResponse>{
                     status: 201,
-                    body: tx
+                    body: {
+                        id: 'id'
+                    }
                 });
 
             superblocksClient = new SuperblocksClient(mockFetch, mockUtils);
 
-            let txResponse: ITransactionModel;
+            let releaseResponse: IReleaseModel;
             assert.doesNotThrow(async () => {
-                txResponse = await superblocksClient.createRelease(workspaceId, userToken, environment);
-                assert.deepStrictEqual(txResponse, tx);
+                releaseResponse = await superblocksClient.createRelease(workspaceId, userToken, environment);
+                assert.deepStrictEqual(releaseResponse, {
+                    id: 'id'
+                });
             });
         });
 
