@@ -367,24 +367,20 @@ describe('ManualSignProvider:', () => {
 
         it('successfully sends message via Rest API', async () => {
             const fromAddress = '0x3117958590752b0871548Dd8715b4C4c41372d3d';
-            assert.doesNotReject(() => {
-                return manualSignProvider.init({
-                    workspaceId: 'dummyId',
-                    token: 'dummyToken',
-                    from: fromAddress,
-                    endpoint: 'http://127.0.0.1',
-                    networkId: '1'
-                });
+            await manualSignProvider.init({
+                workspaceId: 'dummyId',
+                token: 'dummyToken',
+                from: fromAddress,
+                endpoint: 'http://127.0.0.1',
+                networkId: '1'
             });
 
-            await assert.doesNotReject(() => {
-                return manualSignProvider.sendMessage({
-                    jsonrpc: 'eth_test',
-                    id: 0,
-                    method: 'eth_sendTransaction',
-                    params: [],
-                }, '0');
-            });
+            await manualSignProvider.sendMessage({
+                jsonrpc: 'eth_test',
+                id: 0,
+                method: 'eth_sendTransaction',
+                params: [],
+            }, '0');
         });
 
         it('fails to send message via Rest API due to Superblocks Client failure', async () => {
@@ -429,24 +425,20 @@ describe('ManualSignProvider:', () => {
 
         it('successfully signs message via Rest API', async () => {
             const fromAddress = '0x3117958590752b0871548Dd8715b4C4c41372d3d';
-            assert.doesNotReject(() => {
-                return manualSignProvider.init({
-                    workspaceId: 'dummyId',
-                    token: 'dummyToken',
-                    from: fromAddress,
-                    endpoint: 'http://127.0.0.1',
-                    networkId: '1'
-                });
+            await manualSignProvider.init({
+                workspaceId: 'dummyId',
+                token: 'dummyToken',
+                from: fromAddress,
+                endpoint: 'http://127.0.0.1',
+                networkId: '1'
             });
 
-            await assert.doesNotReject(() => {
-                return manualSignProvider.sendMessage({
-                    jsonrpc: 'eth_test',
-                    id: 0,
-                    method: 'eth_sign',
-                    params: [],
-                }, '0');
-            });
+            await manualSignProvider.sendMessage({
+                jsonrpc: 'eth_test',
+                id: 0,
+                method: 'eth_sign',
+                params: [],
+            }, '0');
         });
 
         it('successfully sends message via RPC', async () => {

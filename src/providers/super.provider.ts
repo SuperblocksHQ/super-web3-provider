@@ -88,7 +88,6 @@ export class ManualSignProvider implements IManualSignProvider {
     }
 
     public async sendMessage(payload: JSONRPCRequestPayload, networkId: string): Promise<any> {
-        console.log(payload);
         if (payload.method === 'eth_accounts') {
             return this.getAccounts();
         } else if (payload.method === 'eth_sendTransaction' || payload.method === 'eth_sign') {
