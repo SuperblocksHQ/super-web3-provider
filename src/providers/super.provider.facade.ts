@@ -14,22 +14,16 @@
 // You should have received a copy of the GNU General Public License
 // along with Superblocks. If not, see <http://www.gnu.org/licenses/>.
 
-import { IManualSignProvider, JSONRpcCallback } from '../ioc/interfaces';
+import { IManualSignProvider, JSONRpcCallback, IManualSignProviderOptions } from '../ioc/interfaces';
 import { manualSignProvider } from '..';
 import { JSONRPCRequestPayload, JSONRPCErrorCallback } from 'ethereum-protocol';
-
-interface IProviderOptions {
-    from: string;
-    endpoint: string;
-    networkId: string;
-}
 
 /**
  * Simple Facade class in order to abstract the internal dependencies the ManualSignProvider has
  * so we can inject them using DI.
  */
 export class ManualSignProviderFacade implements IManualSignProvider {
-    constructor(options: IProviderOptions) {
+    constructor(options: IManualSignProviderOptions) {
         manualSignProvider.init(options)
             .catch((_error) => {
                 console.log('Lets finish the process for now');
