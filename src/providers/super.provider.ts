@@ -141,7 +141,7 @@ export class ManualSignProvider implements IManualSignProvider {
             spinner.start('[Superblocks - Manual Sign Provider] Waiting for tx to be signed in Superblocks\n');
 
             // We can only subscribe to the transaction on this precise moment, as otherwise we won't have the proper JobId mapped
-            this.pusherClient.subscribeToChannel(`web3-hub-${transaction.deploymentId}`, ['update_transaction'], (event) => {
+            this.pusherClient.subscribeToChannel(`deployment-${transaction.deploymentId}`, ['update_transaction'], (event) => {
                 if (event.eventName === 'update_transaction') {
                     const txUpdated: ITransactionModel = event.message;
 
@@ -150,7 +150,7 @@ export class ManualSignProvider implements IManualSignProvider {
 
                         // TODO - Is his actually the right thing to do?
                         // Unsubscribe immediately after receiving the receipt txHash
-                        this.pusherClient.unsubscribeFromChannel(`web3-hub-${transaction.deploymentId}`);
+                        this.pusherClient.unsubscribeFromChannel(`deployment-${transaction.deploymentId}`);
 
                         this.pendingTxs.delete(txUpdated.id);
 
