@@ -14,5 +14,12 @@
 // You should have received a copy of the GNU General Public License
 // along with Superblocks.  If not, see <http://www.gnu.org/licenses/>.
 
-export * from './pusher.client';
-export * from './pusher.utils';
+export function getPusherKey() {
+  if (process.env.DEBUG) {
+    return '757837ef865906fabbe5';
+  } else if (process.env.DEVELOP) {
+    return '1385353d1bf5394b8aae';
+  } else {
+    return 'e50bb90f8537b80b1906';
+  }
+}
