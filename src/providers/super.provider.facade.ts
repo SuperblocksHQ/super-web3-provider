@@ -25,8 +25,8 @@ import { JSONRPCRequestPayload, JSONRPCErrorCallback } from 'ethereum-protocol';
 export class ManualSignProviderFacade implements IManualSignProvider {
     constructor(options: IManualSignProviderOptions) {
         manualSignProvider.init(options)
-            .catch((_error) => {
-                console.log('Lets finish the process for now');
+            .catch((error) => {
+                console.log(error);
                 process.exit(2);
             });
     }

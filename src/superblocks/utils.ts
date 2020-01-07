@@ -20,10 +20,12 @@ import { ISuperblocksUtils } from '../ioc/interfaces';
 @injectable()
 export class SuperblocksUtils implements ISuperblocksUtils {
     getApiBaseUrl() {
-        if (process.env.DEBUG) {
+        if (process.env.LOCAL) {
             return 'http://localhost:2999/v1';
-        } else {
+        } else if (process.env.DEVELOP) {
             return `https://api-dev.superblocks.com/v1`;
+        } else {
+            return `https://api.superblocks.com/v1`;
         }
     }
 }
