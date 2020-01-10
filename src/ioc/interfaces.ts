@@ -12,7 +12,7 @@ export interface ISuperblocksUtils {
 
 export interface ISuperblocksClient {
     sendEthTransaction(deploymentId: string, token: string, transaction: ITransactionParamsModel): Promise<ITransactionModel>;
-    createDeployment(deploymentSpaceId: string, token: string, networkId: string): Promise<IDeploymentModel>;
+    createDeployment(deploymentSpaceId: string, token: string, networkId: string, ciJobId?: string): Promise<IDeploymentModel>;
 }
 
 export interface IRpcClient {
