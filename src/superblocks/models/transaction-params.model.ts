@@ -19,6 +19,7 @@ import { JSONRPCRequestPayload } from 'ethereum-protocol';
 export interface ITransactionParamsModel {
     from: string;
     networkId: string;
+    endpoint: string;
     rpcPayload: JSONRPCRequestPayload;
     ciJobId?: string;
 }

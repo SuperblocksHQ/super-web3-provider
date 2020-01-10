@@ -14,7 +14,7 @@
 // You should have received a copy of the GNU General Public License
 // along with Superblocks.  If not, see <http://www.gnu.org/licenses/>.
 // import fetch from 'node-fetch';
-import { ITransactionModel, IDeploymentModel } from './models';
+import { ITransactionModel, IDeploymentModel, ITransactionParamsModel } from './models';
 import { injectable, inject } from 'inversify';
 import { TYPES } from '../ioc/types';
 import { Fetch, ISuperblocksUtils, ISuperblocksClient } from '../ioc/interfaces';
@@ -32,7 +32,7 @@ export class SuperblocksClient implements ISuperblocksClient {
         this.utils = utils;
     }
 
-    async sendEthTransaction(deploymentId: string, token: string, transaction: ITransactionModel): Promise<ITransactionModel> {
+    async sendEthTransaction(deploymentId: string, token: string, transaction: ITransactionParamsModel): Promise<ITransactionModel> {
         const response = await this.fetch(`${this.utils.getApiBaseUrl()}/deployments/${deploymentId}/transactions`, {
             method: 'POST',
             headers: {
@@ -53,25 +53,30 @@ export class SuperblocksClient implements ISuperblocksClient {
     }
 
     async createDeployment(deploymentSpaceId: string, token: string, environment: string): Promise<IDeploymentModel> {
-        const response = await this.fetch(`${this.utils.getApiBaseUrl()}/deployment-spaces/${deploymentSpaceId}/deployments/`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'project-token': token
-            },
-            body: JSON.stringify({
-                environment,
-                type: 'ethereum'
-            })
-        });
 
-        if (response.ok) {
-            const deployment = await response.json();
-            console.log('[Superblocks client] deployment created', deployment);
-            return deployment;
-        } else {
-            const error = await response.text();
-            throw new Error(`[Superblocks client] cannot create a deployment: ${error}`);
+        try {
+            const response = await this.fetch(`${this.utils.getApiBaseUrl()}/deployment-spaces/${deploymentSpaceId}/deployments/`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'project-token': token
+                },
+                body: JSON.stringify({
+                    environment,
+                    type: 'ethereum'
+                })
+            });
+
+            if (response.ok) {
+                const deployment = await response.json();
+                console.log('[Superblocks client] deployment created', deployment);
+                return deployment;
+            } else {
+                const error = await response.text();
+                throw new Error(`[Superblocks client] cannot create a deployment: ${error}`);
+            }
+        } catch (e) {
+            console.log(e);
         }
     }
 }

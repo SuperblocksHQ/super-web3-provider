@@ -19,7 +19,7 @@ import { ISuperblocksUtils } from '../ioc/interfaces';
 
 @injectable()
 export class SuperblocksUtils implements ISuperblocksUtils {
-    getApiBaseUrl() {
+    getApiBaseUrl(): string {
         if (process.env.LOCAL) {
             return 'http://localhost:2999/v1';
         } else if (process.env.DEVELOP) {
@@ -27,6 +27,23 @@ export class SuperblocksUtils implements ISuperblocksUtils {
         } else {
             return `https://api.superblocks.com/v1`;
         }
+    }
+
+    networkIdToName(networkId: string): string {
+        switch (networkId) {
+            case '1':
+                return 'Mainnet';
+            case '3':
+                return 'Ropsten';
+            case '4':
+                return 'Rinkeby';
+            case '5':
+                return 'Görli';
+            case '42':
+                return 'Kovan';
+            default:
+                return networkId;
+    }
     }
 }
 
