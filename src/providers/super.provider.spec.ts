@@ -20,7 +20,7 @@ import * as sinon from 'ts-sinon';
 import { SinonSandbox } from 'sinon';
 import { ManualSignProvider } from './super.provider';
 import { ISuperblocksClient, IPusherClient, IRpcClient, IEventResponse, IManualSignProvider } from '../ioc/interfaces';
-import { ITransactionModel, IDeploymentModel } from '../superblocks/models';
+import { ITransactionModel, IDeploymentModel, ITransactionParamsModel } from '../superblocks/models';
 import { JSONRPCRequestPayload, JSONRPCResponsePayload } from 'ethereum-protocol';
 
 
@@ -30,7 +30,7 @@ import { JSONRPCRequestPayload, JSONRPCResponsePayload } from 'ethereum-protocol
 
 
 class TestSuperblocksClient implements ISuperblocksClient {
-    sendEthTransaction(deploymentId: string, _token: string, transaction: ITransactionModel): Promise<ITransactionModel> {
+    sendEthTransaction(deploymentId: string, _token: string, transaction: ITransactionParamsModel): Promise<ITransactionModel> {
         return Promise.resolve({
                 id: '1234',
                 deploymentId,
@@ -388,7 +388,7 @@ describe('ManualSignProvider:', () => {
 
         it('fails to send message via Rest API due to Superblocks Client failure', async () => {
             class MockSuperblocksClient implements ISuperblocksClient {
-                sendEthTransaction(_deploymentId: string, _token: string, _transaction: ITransactionModel): Promise<ITransactionModel> {
+                sendEthTransaction(_deploymentId: string, _token: string, _transaction: ITransactionParamsModel): Promise<ITransactionModel> {
                     throw new Error('sendEthTransaction exception');
                 }
 
@@ -587,7 +587,7 @@ describe('ManualSignProvider:', () => {
 
         it('fails to send message via Rest API due to Superblocks Client failure', async () => {
             class MockSuperblocksClient implements ISuperblocksClient {
-                sendEthTransaction(_deploymentId: string, _token: string, _transaction: ITransactionModel): Promise<ITransactionModel> {
+                sendEthTransaction(_deploymentId: string, _token: string, _transaction: ITransactionParamsModel): Promise<ITransactionModel> {
                     throw new Error('sendEthTransaction exception');
                 }
 
