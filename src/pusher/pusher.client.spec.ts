@@ -35,6 +35,9 @@ const mockChannel = <Pusher.Channel> {
 };
 
 const mockPusher = <Pusher.Pusher> {
+    config: {
+        auth: {}
+    },
     subscribe: (_channelName: string) => {
         return mockChannel;
     }
@@ -60,7 +63,7 @@ describe('PusherClient:', () => {
 
         it('subscribes to channel', (done) => {
             assert.doesNotThrow(() => {
-                pusherClient.subscribeToChannel('test-channel', ['test_event'],
+                pusherClient.subscribeToChannel('test-channel', ['test_event'], 'token',
                     (eventResponse: IEventResponse) => {
                         assert.deepStrictEqual(eventResponse.eventName, 'test_event');
                         assert.deepStrictEqual(eventResponse.message, undefined);
@@ -81,6 +84,9 @@ describe('PusherClient:', () => {
             };
 
             const modifiedMockPusher = <Pusher.Pusher> {
+                config: {
+                    auth: {}
+                },
                 subscribe: (_channelName: string) => {
                     return modifiedMockChannel;
                 }
@@ -90,7 +96,7 @@ describe('PusherClient:', () => {
 
             let currentBindCount = 0;
             assert.doesNotThrow(() => {
-                pusherClient.subscribeToChannel('test-channel', ['entry'],
+                pusherClient.subscribeToChannel('test-channel', ['entry'], 'token',
                     (eventResponse: IEventResponse) => {
                         currentBindCount++;
                         assert.notDeepStrictEqual(eventResponse, undefined);
@@ -109,7 +115,7 @@ describe('PusherClient:', () => {
 
         it('successfully unsubscribes from previously subscribed channelName', (done) => {
             assert.doesNotThrow( () => {
-                pusherClient.subscribeToChannel('test-channel', ['test_event'],
+                pusherClient.subscribeToChannel('test-channel', ['test_event'], 'token',
                     (eventResponse: IEventResponse) => {
                         assert.deepStrictEqual(eventResponse.eventName, 'test_event');
                         assert.deepStrictEqual(eventResponse.message, undefined);

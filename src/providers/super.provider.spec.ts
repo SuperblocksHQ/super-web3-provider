@@ -58,9 +58,10 @@ class TestSuperblocksClient implements ISuperblocksClient {
 }
 
 class TestPusherClient implements IPusherClient {
-    subscribeToChannel(channelName: string, eventNames: [string], callback: (eventResponse: IEventResponse) => any): void {
+    subscribeToChannel(channelName: string, eventNames: [string], token: string, callback: (eventResponse: IEventResponse) => any): void {
         (channelName);
         (eventNames);
+        (token);
         callback({
             eventName: 'update_transaction',
             message: channelName
