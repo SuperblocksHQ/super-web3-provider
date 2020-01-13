@@ -141,8 +141,8 @@ export class ManualSignProvider implements IManualSignProvider {
             spinner.start('[Superblocks - Manual Sign Provider] Waiting for tx to be signed in Superblocks\n');
 
             // We can only subscribe to the transaction on this precise moment, as otherwise we won't have the proper JobId mapped
-            this.pusherClient.subscribeToChannel(`deployment-${transaction.deploymentId}`, ['update_transaction'], (event) => {
-                if (event.eventName === 'update_transaction') {
+            this.pusherClient.subscribeToChannel(`private-deployment-${transaction.deploymentId}`, ['transaction-updated'], this.options.token, (event) => {
+                if (event.eventName === 'transaction-updated') {
                     const txUpdated: ITransactionModel = event.message;
 
                     if (this.pendingTxs.get(txUpdated.id)) {

@@ -41,7 +41,7 @@ export interface IEventResponse {
 }
 
 export interface IPusherClient {
-    subscribeToChannel(channelName: string, eventNames: [string], callback: (eventResponse: IEventResponse) => any): void;
+    subscribeToChannel(channelName: string, eventNames: [string], token: string, callback: (eventResponse: IEventResponse) => any): void;
     unsubscribeFromChannel(channelName: string): void;
 }
 

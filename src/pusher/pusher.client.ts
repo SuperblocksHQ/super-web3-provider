@@ -31,7 +31,14 @@ export class PusherClient implements IPusherClient {
       console.log(`[Pusher Service] Connected to Pusher`);
   }
 
-  public subscribeToChannel(channelName: string, eventNames: [string], callback: (eventResponse: IEventResponse) => any) {
+  public subscribeToChannel(channelName: string, eventNames: [string], token: string, callback: (eventResponse: IEventResponse) => any) {
+    // Make sure we update the config to include now that we have it available the project token setup by the user
+    this.pusher.config.auth = {
+      headers: {
+        'project-token': token
+      }
+    };
+
     const channel = this.pusher.subscribe(channelName);
 
     // Add the channel to the subscribed hash
@@ -39,6 +46,7 @@ export class PusherClient implements IPusherClient {
 
     eventNames.map((name: string) => {
         channel.bind(name, (data: any) => {
+            console.log(eventNames);
             callback({
               eventName: name,
               message: data

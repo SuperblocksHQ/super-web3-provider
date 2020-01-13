@@ -6,16 +6,17 @@ import { Fetch, Pusher, IManualSignProvider, ISuperblocksUtils, ISuperblocksClie
 import { SuperblocksUtils } from '../superblocks/utils';
 import { SuperblocksClient } from '../superblocks/superblocks.client';
 import { ManualSignProvider } from '../providers/super.provider';
-import { PusherClient, getPusherKey } from '../pusher';
+import { PusherClient, getPusherKey, getAuthEndpoint } from '../pusher';
 import { RpcClient } from '../rpc';
 
 const thirdPartyDependencies = new ContainerModule((bind) => {
     bind<Fetch>(TYPES.Fetch).toConstantValue(fetch.default);
-    bind<Pusher>(TYPES.Pusher).toConstantValue(new pusher.default(getPusherKey(), {
+    bind<Pusher>(TYPES.Pusher).toDynamicValue(() => new pusher.default(getPusherKey(), {
+        authEndpoint: getAuthEndpoint(),
         cluster: 'eu',
         forceTLS: true
       })
-    );
+    ).inSingletonScope();
 });
 
 const applicationDependencies = new ContainerModule((bind) => {
