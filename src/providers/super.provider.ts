@@ -21,7 +21,7 @@ import Url from 'url';
 import { JSONRPCRequestPayload, JSONRPCErrorCallback } from 'ethereum-protocol';
 import { ITransactionModel } from '../superblocks/models';
 import { TYPES } from '../ioc/types';
-import { ISuperblocksClient, IManualSignProvider, IPusherClient, IRpcClient, JSONRpcCallback, IManualSignProviderOptions } from '../ioc/interfaces';
+import { ISuperblocksClient, IManualSignProvider, IPusherClient, IRpcClient, JSONRpcCallback, IManualSignProviderOptions, ISuperblocksUtils } from '../ioc/interfaces';
 
 @injectable()
 export class ManualSignProvider implements IManualSignProvider {
@@ -31,6 +31,7 @@ export class ManualSignProvider implements IManualSignProvider {
     private superblocksClient: ISuperblocksClient;
     private pusherClient: IPusherClient;
     private rpcClient: IRpcClient;
+    private superblocksUtils: ISuperblocksUtils;
     private options: IManualSignProviderOptions;
     private deploymentId: string;
     private pendingTxs: Map<string, ITransactionModel>;
@@ -38,11 +39,13 @@ export class ManualSignProvider implements IManualSignProvider {
     constructor(
         @inject(TYPES.SuperblocksClient) superblocksClient: ISuperblocksClient,
         @inject(TYPES.PusherClient) pusherClient: IPusherClient,
-        @inject(TYPES.RpcClient) rpcClient: IRpcClient
+        @inject(TYPES.RpcClient) rpcClient: IRpcClient,
+        @inject(TYPES.SuperblocksUtils) superblocksUtils: ISuperblocksUtils,
     ) {
         this.superblocksClient = superblocksClient;
         this.pusherClient = pusherClient;
         this.rpcClient = rpcClient;
+        this.superblocksUtils = superblocksUtils;
     }
 
     public static isValidEndpoint(endpoint: string): boolean {
@@ -79,7 +82,7 @@ export class ManualSignProvider implements IManualSignProvider {
         this.pendingTxs = new Map();
 
         // Let make sure we crete a new deployment on every init in order to group txs together
-        const deployment = await this.superblocksClient.createDeployment(options.deploymentSpaceId, options.token, options.networkId, this.CI_JOB_ID);
+        const deployment = await this.superblocksClient.createDeployment(options.deploymentSpaceId, options.token, this.superblocksUtils.networkIdToName(options.networkId), this.CI_JOB_ID);
         this.deploymentId = deployment.id;
     }
 
@@ -124,6 +127,7 @@ export class ManualSignProvider implements IManualSignProvider {
             try {
                 transaction = await this.superblocksClient.sendEthTransaction(this.deploymentId, this.options.token, {
                     networkId,
+                    endpoint: this.options.endpoint,
                     from: this.options.from,
                     rpcPayload: payload
                 });

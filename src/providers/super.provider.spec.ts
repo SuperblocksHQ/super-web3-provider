@@ -19,8 +19,8 @@ import * as assert from 'assert';
 import * as sinon from 'ts-sinon';
 import { SinonSandbox } from 'sinon';
 import { ManualSignProvider } from './super.provider';
-import { ISuperblocksClient, IPusherClient, IRpcClient, IEventResponse, IManualSignProvider } from '../ioc/interfaces';
-import { ITransactionModel, IDeploymentModel } from '../superblocks/models';
+import { ISuperblocksClient, IPusherClient, IRpcClient, IEventResponse, IManualSignProvider, ISuperblocksUtils } from '../ioc/interfaces';
+import { ITransactionModel, IDeploymentModel, ITransactionParamsModel } from '../superblocks/models';
 import { JSONRPCRequestPayload, JSONRPCResponsePayload } from 'ethereum-protocol';
 
 
@@ -28,9 +28,8 @@ import { JSONRPCRequestPayload, JSONRPCResponsePayload } from 'ethereum-protocol
 /* tslint:disable:no-unused-expression */
 /* tslint:disable:max-classes-per-file */
 
-
 class TestSuperblocksClient implements ISuperblocksClient {
-    sendEthTransaction(deploymentId: string, _token: string, transaction: ITransactionModel): Promise<ITransactionModel> {
+    sendEthTransaction(deploymentId: string, _token: string, transaction: ITransactionParamsModel): Promise<ITransactionModel> {
         return Promise.resolve({
                 id: '1234',
                 deploymentId,
@@ -73,6 +72,15 @@ class TestPusherClient implements IPusherClient {
     }
 }
 
+class TestSuperblocksUtils implements ISuperblocksUtils {
+    getApiBaseUrl() {
+        return 'http://someBaseUrl.com/'
+    }
+    networkIdToName(_networkId: string) {
+        return 'someName';
+    }
+}
+
 class TestRpcClient implements IRpcClient {
     sendRpcJsonCall(endpoint: string, payload: JSONRPCRequestPayload): Promise<any> {
         return new Promise(async (resolve, _) => {
@@ -90,7 +98,7 @@ describe('ManualSignProvider:', () => {
     beforeEach(() => {
         // Remove console logs to make the test results cleaner
         sandbox = sinon.default.createSandbox();
-        // sandbox.stub(console, 'log');
+        sandbox.stub(console, 'log');
     });
 
     afterEach(() => {
@@ -146,7 +154,8 @@ describe('ManualSignProvider:', () => {
 
         beforeEach(() => {
             const client = new TestSuperblocksClient();
-            manualSignProvider = new ManualSignProvider(client, null, null);
+            const mockUtils = new TestSuperblocksUtils();
+            manualSignProvider = new ManualSignProvider(client, null, null, mockUtils);
         });
 
         it('initializes manual sign provider successfully', () => {
@@ -261,7 +270,8 @@ describe('ManualSignProvider:', () => {
 
         beforeEach(() => {
             const client = new TestSuperblocksClient();
-            manualSignProvider = new ManualSignProvider(client, null, null);
+            const mockUtils = new TestSuperblocksUtils();
+            manualSignProvider = new ManualSignProvider(client, null, null, mockUtils);
         });
 
         it('retrieves accounts successfully', async () => {
@@ -295,7 +305,8 @@ describe('ManualSignProvider:', () => {
             const client = new TestSuperblocksClient();
             pusherClient = new TestPusherClient();
             const rpcClient = new TestRpcClient();
-            manualSignProvider = new ManualSignProvider(client, pusherClient, rpcClient);
+            const mockUtils = new TestSuperblocksUtils();
+            manualSignProvider = new ManualSignProvider(client, pusherClient, rpcClient, mockUtils);
         });
 
         it('successfully retrieve accounts', async () => {
@@ -388,7 +399,7 @@ describe('ManualSignProvider:', () => {
 
         it('fails to send message via Rest API due to Superblocks Client failure', async () => {
             class MockSuperblocksClient implements ISuperblocksClient {
-                sendEthTransaction(_deploymentId: string, _token: string, _transaction: ITransactionModel): Promise<ITransactionModel> {
+                sendEthTransaction(_deploymentId: string, _token: string, _transaction: ITransactionParamsModel): Promise<ITransactionModel> {
                     throw new Error('sendEthTransaction exception');
                 }
 
@@ -405,7 +416,8 @@ describe('ManualSignProvider:', () => {
             }
 
             const superblocksClient = new MockSuperblocksClient();
-            manualSignProvider = new ManualSignProvider(superblocksClient, null, null);
+            const mockUtils = new TestSuperblocksUtils();
+            manualSignProvider = new ManualSignProvider(superblocksClient, null, null, mockUtils);
             const fromAddress = '0x3117958590752b0871548Dd8715b4C4c41372d3d';
 
             await manualSignProvider.init({
@@ -471,7 +483,8 @@ describe('ManualSignProvider:', () => {
             const client = new TestSuperblocksClient();
             const pusherClient = new TestPusherClient();
             const rpcClient = new TestRpcClient();
-            manualSignProvider = new ManualSignProvider(client, pusherClient, rpcClient);
+            const mockUtils = new TestSuperblocksUtils();
+            manualSignProvider = new ManualSignProvider(client, pusherClient, rpcClient, mockUtils);
         });
 
         it('successfully retrieve accounts', async () => {
@@ -539,7 +552,8 @@ describe('ManualSignProvider:', () => {
             const client = new TestSuperblocksClient();
             const pusherClient = new TestPusherClient();
             const rpcClient = new TestRpcClient();
-            manualSignProvider = new ManualSignProvider(client, pusherClient, rpcClient);
+            const mockUtils = new TestSuperblocksUtils();
+            manualSignProvider = new ManualSignProvider(client, pusherClient, rpcClient, mockUtils);
         });
 
         it('successfully retrieve accounts', async () => {
@@ -587,7 +601,7 @@ describe('ManualSignProvider:', () => {
 
         it('fails to send message via Rest API due to Superblocks Client failure', async () => {
             class MockSuperblocksClient implements ISuperblocksClient {
-                sendEthTransaction(_deploymentId: string, _token: string, _transaction: ITransactionModel): Promise<ITransactionModel> {
+                sendEthTransaction(_deploymentId: string, _token: string, _transaction: ITransactionParamsModel): Promise<ITransactionModel> {
                     throw new Error('sendEthTransaction exception');
                 }
 
@@ -604,7 +618,8 @@ describe('ManualSignProvider:', () => {
             }
 
             const superblocksClient = new MockSuperblocksClient();
-            manualSignProvider = new ManualSignProvider(superblocksClient, null, null);
+            const mockUtils = new TestSuperblocksUtils();
+            manualSignProvider = new ManualSignProvider(superblocksClient, null, null, mockUtils);
             const fromAddress = '0x3117958590752b0871548Dd8715b4C4c41372d3d';
 
             await manualSignProvider.init({
@@ -652,7 +667,8 @@ describe('ManualSignProvider:', () => {
         const client = new TestSuperblocksClient();
         const pusherClient = new TestPusherClient();
         const rpcClient = new TestRpcClient();
-        const manualSignProvider = new ManualSignProvider(client, pusherClient, rpcClient);
+        const mockUtils = new TestSuperblocksUtils();
+        const manualSignProvider = new ManualSignProvider(client, pusherClient, rpcClient, mockUtils);
 
         assert.rejects(() => manualSignProvider.init({ deploymentSpaceId: '', token: '', from: '', endpoint: '', networkId: '' }));
         assert.rejects(() => manualSignProvider.init({ deploymentSpaceId: 'dummy', token: '', from: '', endpoint: '', networkId: '' }));

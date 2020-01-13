@@ -8,6 +8,7 @@ export type Pusher = typeof pusher.prototype;
 
 export interface ISuperblocksUtils {
     getApiBaseUrl: () => string;
+    networkIdToName: (networkId: string) => string;
 }
 
 export interface ISuperblocksClient {
