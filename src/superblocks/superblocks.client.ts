@@ -52,8 +52,7 @@ export class SuperblocksClient implements ISuperblocksClient {
         }
     }
 
-    async createDeployment(deploymentSpaceId: string, token: string, environment: string): Promise<IDeploymentModel> {
-
+    async createDeployment(deploymentSpaceId: string, token: string, environment: string, ciJobId?: string): Promise<IDeploymentModel> {
         try {
             const response = await this.fetch(`${this.utils.getApiBaseUrl()}/deployment-spaces/${deploymentSpaceId}/deployments/`, {
                 method: 'POST',
@@ -63,7 +62,8 @@ export class SuperblocksClient implements ISuperblocksClient {
                 },
                 body: JSON.stringify({
                     environment,
-                    type: 'ethereum'
+                    type: 'ethereum',
+                    ciJobId
                 })
             });
 
