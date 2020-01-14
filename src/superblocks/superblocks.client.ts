@@ -73,7 +73,7 @@ export class SuperblocksClient implements ISuperblocksClient {
                 return deployment;
             } else {
                 const error = await response.text();
-                throw new Error(`[Superblocks client] cannot create a deployment: ${error}`);
+                throw new Error(`[Superblocks client] cannot create a deployment for space ${deploymentSpaceId}: ${error}`);
             }
         } catch (e) {
             console.log(e);
