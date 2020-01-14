@@ -34,7 +34,7 @@ export class ManualSignProvider implements IManualSignProvider {
     private superblocksUtils: ISuperblocksUtils;
     private options: IManualSignProviderOptions;
     private deploymentId: string;
-    private pendingTxs: Map<string, ITransactionModel>;
+    private pendingToSignTxs: Map<string, ITransactionModel>;
 
     constructor(
         @inject(TYPES.SuperblocksClient) superblocksClient: ISuperblocksClient,
@@ -79,7 +79,7 @@ export class ManualSignProvider implements IManualSignProvider {
         }
 
         this.options = options;
-        this.pendingTxs = new Map();
+        this.pendingToSignTxs = new Map();
 
         // Let make sure we crete a new deployment on every init in order to group txs together
         const deployment = await this.superblocksClient.createDeployment(options.deploymentSpaceId, options.token, this.superblocksUtils.networkIdToName(options.networkId), this.CI_JOB_ID);
@@ -91,6 +91,9 @@ export class ManualSignProvider implements IManualSignProvider {
     }
 
     public async sendMessage(payload: JSONRPCRequestPayload, networkId: string): Promise<any> {
+        // console.log('SENDING MESSAGE\n\n');
+        // console.log(payload.method);
+
         if (payload.method === 'eth_accounts') {
             return this.getAccounts();
         } else if (payload.method === 'eth_sendTransaction' || payload.method === 'eth_sign') {
@@ -139,26 +142,20 @@ export class ManualSignProvider implements IManualSignProvider {
                 return;
             }
 
-            spinner.succeed('[Superblocks - Manual Sign Provider] Transaction registered into Superblocks');
-
-            this.pendingTxs.set(transaction.id, transaction);
-            spinner.start('[Superblocks - Manual Sign Provider] Waiting for tx to be signed in Superblocks\n');
+            this.pendingToSignTxs.set(transaction.id, transaction);
+            spinner.start('[Superblocks - Manual Sign Provider] Waiting tx to be signed in the dashboard\n');
 
             // We can only subscribe to the transaction on this precise moment, as otherwise we won't have the proper JobId mapped
             this.pusherClient.subscribeToChannel(`private-deployment-${transaction.deploymentId}`, ['transaction-updated'], this.options.token, (event) => {
                 if (event.eventName === 'transaction-updated') {
                     const txUpdated: ITransactionModel = event.message;
 
-                    if (this.pendingTxs.get(txUpdated.id)) {
-                        spinner.succeed(`[Superblocks - Manual Sign Provider] Transaction sent. TxHash: ${txUpdated.transactionHash}`);
+                    if (txUpdated.transactionHash && this.pendingToSignTxs.get(txUpdated.id)) {
+                        spinner.succeed(`[Superblocks - Manual Sign Provider] Transaction deployed. TxHash: ${txUpdated.transactionHash}`);
 
-                        // TODO - Is his actually the right thing to do?
-                        // Unsubscribe immediately after receiving the receipt txHash
-                        this.pusherClient.unsubscribeFromChannel(`deployment-${transaction.deploymentId}`);
+                        this.pendingToSignTxs.delete(txUpdated.id);
 
-                        this.pendingTxs.delete(txUpdated.id);
-
-                        // TODO - Proper error handling here
+                        console.log('Resolving Promise: ' + txUpdated.transactionHash);
                         resolve(txUpdated.transactionHash);
                     }
                 }

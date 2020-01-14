@@ -46,19 +46,11 @@ export class PusherClient implements IPusherClient {
 
     eventNames.map((name: string) => {
         channel.bind(name, (data: any) => {
-            console.log(eventNames);
             callback({
               eventName: name,
               message: data
             });
         });
     });
-  }
-
-  public unsubscribeFromChannel(channelName: string) {
-    const channel = this.subscribedChannels[channelName];
-    if (channel) {
-      channel.unbind();
-    }
   }
 }

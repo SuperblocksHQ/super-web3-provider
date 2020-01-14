@@ -16,6 +16,15 @@
 
 import { JSONRPCRequestPayload } from 'ethereum-protocol';
 
+export enum TransactionStatus {
+    Created = 'created',
+    Pending = 'pending',
+    Queued = 'queued',
+    Mined = 'mined',
+    Confirmed = 'confirmed',
+    Reorganized = 'reorganized'
+}
+
 export enum MinedTransactionStatus {
     Success = '0x01',
     Fail = '0x00'
@@ -50,6 +59,7 @@ export interface ITransactionModel {
     networkId: string;
     rpcPayload: JSONRPCRequestPayload;
     deploymentId: string;
+    status: TransactionStatus;
 
     // This will only be available when the receipt is in place
     transactionHash?: string;

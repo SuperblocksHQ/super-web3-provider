@@ -44,7 +44,6 @@ export class SuperblocksClient implements ISuperblocksClient {
 
         if (response.ok) {
             const tx = await response.json();
-            console.log('[Superblocks client] transaction sent', tx);
             return tx;
         } else {
             console.log(await response.text());
@@ -69,7 +68,7 @@ export class SuperblocksClient implements ISuperblocksClient {
 
             if (response.ok) {
                 const deployment = await response.json();
-                console.log('[Superblocks client] deployment created', deployment);
+                console.log('[Superblocks client] deployment created:\n\n', JSON.stringify(deployment, undefined, 4));
                 return deployment;
             } else {
                 const error = await response.text();
