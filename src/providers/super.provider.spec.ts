@@ -429,14 +429,12 @@ describe('ManualSignProvider:', () => {
                 networkId: '1'
             });
 
-            await assert.rejects(() => {
-                return manualSignProvider.sendMessage({
-                    jsonrpc: 'eth_test',
-                    id: 0,
-                    method: 'eth_sendTransaction',
-                    params: [],
-                }, '0');
-            });
+            await assert.rejects(manualSignProvider.sendMessage({
+                jsonrpc: 'eth_test',
+                id: 0,
+                method: 'eth_sendTransaction',
+                params: [],
+            }, '0'));
         });
 
         // TODO - Disable for now until we figure out how to test it with the Pusher subscription model

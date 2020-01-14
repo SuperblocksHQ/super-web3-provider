@@ -82,11 +82,7 @@ describe('SuperblocksClient:', () => {
             const mockFetch = fetchMock.sandbox().post(`https://some-url/deployments/${deploymentId}/transactions`, <MockResponse>{ status: 400, body: { message: 'This is an error' }});
             superblocksClient = new SuperblocksClient(mockFetch, mockUtils);
 
-            try {
-                await superblocksClient.sendEthTransaction(deploymentId, 'dummyToken', txParams);
-            } catch (e) {
-                assert.equal(e.message, '[Superblocks client] cannot create send transaction to the web3 hub');
-            }
+            assert.rejects(superblocksClient.sendEthTransaction(deploymentId, 'dummyToken', txParams));
         });
     });
 

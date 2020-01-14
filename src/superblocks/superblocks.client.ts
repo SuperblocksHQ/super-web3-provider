@@ -47,7 +47,7 @@ export class SuperblocksClient implements ISuperblocksClient {
             return tx;
         } else {
             console.log(await response.text());
-            throw new Error('[Superblocks client] cannot create send transaction to the web3 hub');
+            throw new Error('[Superblocks - Manual Sign Provider] The tx could not be sent to Superblocks');
         }
     }
 
@@ -68,11 +68,11 @@ export class SuperblocksClient implements ISuperblocksClient {
 
             if (response.ok) {
                 const deployment = await response.json();
-                console.log('[Superblocks client] deployment created:\n\n', JSON.stringify(deployment, undefined, 4));
+                console.log('[Superblocks - Manual Sign Provider] deployment created:\n\n', JSON.stringify(deployment, undefined, 4));
                 return deployment;
             } else {
                 const error = await response.text();
-                throw new Error(`[Superblocks client] cannot create a deployment for space ${deploymentSpaceId}: ${error}`);
+                throw new Error(`[Superblocks - Manual Sign Provider] cannot create a deployment for space ${deploymentSpaceId}: ${error}`);
             }
         } catch (e) {
             console.log(e);

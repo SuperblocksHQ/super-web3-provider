@@ -90,7 +90,7 @@ export class ManualSignProvider implements IManualSignProvider {
         return Promise.resolve([this.options.from]);
     }
 
-    public async sendMessage(payload: JSONRPCRequestPayload, networkId: string): Promise<any> {
+    public sendMessage(payload: JSONRPCRequestPayload, networkId: string): Promise<any> {
         // console.log('SENDING MESSAGE\n\n');
         // console.log(payload.method);
 
@@ -137,7 +137,7 @@ export class ManualSignProvider implements IManualSignProvider {
             spinner.fail('[Superblocks - Manual Sign Provider] Failed to send the tx to Superblocks.');
             console.log('\x1b[31m%s\x1b[0m', 'Error: ', error.message);
 
-            throw new Error(error.message);
+            return Promise.reject(error.message);
         }
 
         return new Promise((resolve) => {
