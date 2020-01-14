@@ -155,7 +155,6 @@ export class ManualSignProvider implements IManualSignProvider {
                         this.pendingToSignTxs.delete(txUpdated.id);
                         this.pusherClient.unsubscribeFromChannel(`private-deployment-${transaction.deploymentId}`);
 
-                        console.log('Resolving Promise: ' + txUpdated.transactionHash);
                         resolve(txUpdated.transactionHash);
                     }
                 }
