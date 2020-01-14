@@ -125,23 +125,22 @@ export class ManualSignProvider implements IManualSignProvider {
 
     private async sendRestApiCall(payload: JSONRPCRequestPayload, networkId: string): Promise<any> {
         const spinner = this.loadingLog('[Superblocks - Manual Sign Provider] Sending tx to Superblocks').start();
-        return new Promise(async (resolve, rejects) => {
-            let transaction: ITransactionModel;
-            try {
-                transaction = await this.superblocksClient.sendEthTransaction(this.deploymentId, this.options.token, {
-                    networkId,
-                    endpoint: this.options.endpoint,
-                    from: this.options.from,
-                    rpcPayload: payload
-                });
-            } catch (error) {
-                spinner.fail('[Superblocks - Manual Sign Provider] Failed to send the tx to Superblocks.');
-                console.log('\x1b[31m%s\x1b[0m', 'Error: ', error.message);
+        let transaction: ITransactionModel;
+        try {
+            transaction = await this.superblocksClient.sendEthTransaction(this.deploymentId, this.options.token, {
+                networkId,
+                endpoint: this.options.endpoint,
+                from: this.options.from,
+                rpcPayload: payload
+            });
+        } catch (error) {
+            spinner.fail('[Superblocks - Manual Sign Provider] Failed to send the tx to Superblocks.');
+            console.log('\x1b[31m%s\x1b[0m', 'Error: ', error.message);
 
-                rejects(error.message);
-                return;
-            }
+            throw new Error(error.message);
+        }
 
+        return new Promise((resolve) => {
             this.pendingToSignTxs.set(transaction.id, transaction);
             spinner.start('[Superblocks - Manual Sign Provider] Waiting tx to be signed in the dashboard\n');
 
@@ -154,6 +153,7 @@ export class ManualSignProvider implements IManualSignProvider {
                         spinner.succeed(`[Superblocks - Manual Sign Provider] Transaction deployed. TxHash: ${txUpdated.transactionHash}`);
 
                         this.pendingToSignTxs.delete(txUpdated.id);
+                        this.pusherClient.unsubscribeFromChannel(`private-deployment-${transaction.deploymentId}`);
 
                         console.log('Resolving Promise: ' + txUpdated.transactionHash);
                         resolve(txUpdated.transactionHash);

@@ -53,4 +53,11 @@ export class PusherClient implements IPusherClient {
         });
     });
   }
+
+  public unsubscribeFromChannel(channelName: string) {
+    const channel = this.subscribedChannels[channelName];
+    if (channel) {
+      channel.unbind();
+    }
+  }
 }

@@ -20,7 +20,7 @@ import * as sinon from 'ts-sinon';
 import { SinonSandbox } from 'sinon';
 import { ManualSignProvider } from './super.provider';
 import { ISuperblocksClient, IPusherClient, IRpcClient, IEventResponse, IManualSignProvider, ISuperblocksUtils } from '../ioc/interfaces';
-import { ITransactionModel, IDeploymentModel, ITransactionParamsModel } from '../superblocks/models';
+import { ITransactionModel, IDeploymentModel, ITransactionParamsModel, TransactionStatus } from '../superblocks/models';
 import { JSONRPCRequestPayload, JSONRPCResponsePayload } from 'ethereum-protocol';
 
 
@@ -35,6 +35,7 @@ class TestSuperblocksClient implements ISuperblocksClient {
                 deploymentId,
                 from: transaction.from,
                 networkId: transaction.networkId,
+                status: TransactionStatus.Pending,
                 rpcPayload: {
                     params: [],
                     method: transaction.rpcPayload.method,
