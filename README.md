@@ -5,12 +5,15 @@
 Web3 provider to create a secure channel between our CI runners and the Superblocks platform to handle Smart Contract deployments through our blockchain dedicated CI/CD platform
 
 
-### How to create new version
 
-1. Do changes in code
-2. Update package.json *version* field to new version (using [semver](https://semver.org/) notation)
-    2.a. In case this is beta version of the package then format is *"x.y.z-beta.n"*, where *x, y, z, n* - numbers. Beta version is published with "beta" tag in npm (thus it won't be automatically installed as "latest")
-    2.b. In order to publish "latest" version - just use *"x.y.z"* format for *version* field.
-3. Push the code to master branch
-4. Create a tag with version as in package.json and add some release description
-5. Gitlab will trigger a job which will push new version to NPM
+## Manual Sign Provider
+This provider allows you to track and manually securely sign your Txs using Metamask, Ledger or Trezor inside the Superblocks platform. 
+
+
+## HDWallet Provider (Coming Soon)
+A minimal custom HD Ethereum wallet provider based on MetaMask's provider engine library and Truffle's [HDWalletProvider](https://github.com/trufflesuite/truffle/tree/develop/packages/hdwallet-provider) provider package.
+
+### Why using this custom HDWallet provider? 
+There are cases in which you might don't care about exposing your private keys through an environmental variable in the CI provider, per example when either deploying to a tesnet or having a throw away deployment key. For all these cases, you can use this provider to sign your transactions locally but still manage to track the deployment through the Superblocks platform. 
+
+
