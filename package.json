@@ -1,6 +1,6 @@
 {
   "name": "super-web3-provider",
-  "version": "0.0.13",
+  "version": "0.0.14",
   "description": "Web3 provider to create a secure channel between our CI runners and the Superblocks platform to handle Smart Contract deployments through our blockchain dedicated DevOps platform",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -18,7 +18,7 @@
   "bugs": {
     "url": "https://github.com/SuperblocksHQ/super-web3-provider/issues"
   },
-  "homepage": "https://gitlab.com/superblocks/super-web3-provider#readme",
+  "homepage": "https://www.superblocks.com",
   "devDependencies": {
     "@types/bn.js": "^4.11.5",
     "@types/ethereum-protocol": "^1.0.0",

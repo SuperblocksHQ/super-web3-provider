@@ -5,7 +5,6 @@
 Web3 provider to create a secure channel between our CI runners and the Superblocks platform to handle Smart Contract deployments through our blockchain dedicated CI/CD platform
 
 
-
 ## Manual Sign Provider
 This provider allows you to track and manually securely sign your Txs using Metamask, Ledger or Trezor inside the Superblocks platform. 
 
