@@ -11,7 +11,6 @@ import { TYPES } from '../ioc/types';
 const hdWalletProvider = require('@truffle/hdwallet-provider');
 
 // FIXME: needs manual typings ?
-const whitelistProvider = require('web3-provider-engine/subproviders/whitelist');
 const providerSubProvider = require('web3-provider-engine/subproviders/provider');
 
 // ATTENTION: Merge ProviderEngine types as they are not correctly done
@@ -47,14 +46,31 @@ export class SuperHDWalletProvider implements IHDWalletProvider {
     }
 
     public async init({
+        deploymentSpaceId,
+        token,
         mnemonic,
         provider,
+        networkId,
         addressIndex = 0,
         numAddresses = 10,
         shareNonce = true,
         walletHdPath = `m/44'/60'/0'/0/`
     }: IHDWalletProviderOptions) {
         console.info('[SuperHDWalletProvider] Initializing...');
+
+        // TODO - Add validation to everything
+
+        this.options = {
+            deploymentSpaceId,
+            token,
+            mnemonic,
+            provider,
+            networkId,
+            addressIndex,
+            numAddresses,
+            shareNonce,
+            walletHdPath
+        };
 
         // Create new provider-engine
         this.engine = <IWeb3ProviderEngine> new ProviderEngine();
@@ -97,23 +113,9 @@ export class SuperHDWalletProvider implements IHDWalletProvider {
             console.warn('[SuperHDWalletProvider] Expected provider engine listener to be available. Skipping EventEmitter debugging...');
         }
 
-        //
-        // Configure provider by composing subproviders
-        //
-
-        // Add whitelist filtering
-        // NOTE: TODO: FIXME:
-        // Experiment with this option by toggling the switch below
-        // to only allow a select list of Ethereum operations to be performed
-        if (false) {
-            this.engine.addProvider(new whitelistProvider(['eth_gasPrice', 'eth_blockNumber']));
-        }
-
         // Add Truffle's HDWalletProvider
         const hdwalletProvider = new hdWalletProvider(mnemonic, provider, addressIndex, numAddresses, shareNonce, walletHdPath);
         this.engine.addProvider(new providerSubProvider(hdwalletProvider));
-
-        console.log('here');
 
         await this.hookCreateRelease();
 

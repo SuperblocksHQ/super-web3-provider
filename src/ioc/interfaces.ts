@@ -40,9 +40,8 @@ export interface IHDWalletProviderOptions {
     deploymentSpaceId: string;
     token: string;
     mnemonic: string | string[];
-    endpoint: string;
+    provider: any;
     networkId: string;
-    provider?: any;
     addressIndex?: number;
     numAddresses?: number;
     shareNonce?: boolean;

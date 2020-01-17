@@ -52,32 +52,26 @@ export class SuperblocksClient implements ISuperblocksClient {
     }
 
     async createDeployment(deploymentSpaceId: string, token: string, environment: string, ciJobId?: string): Promise<IDeploymentModel> {
-        console.log('PUTAAAA1\n\n\n');
-        try {
-            const response = await this.fetch(`${this.utils.getApiBaseUrl()}/deployment-spaces/${deploymentSpaceId}/deployments/`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'project-token': token
-                },
-                body: JSON.stringify({
-                    environment,
-                    type: 'ethereum',
-                    ciJobId
-                })
-            });
+        const response = await this.fetch(`${this.utils.getApiBaseUrl()}/deployment-spaces/${deploymentSpaceId}/deployments/`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'project-token': token
+            },
+            body: JSON.stringify({
+                environment,
+                type: 'ethereum',
+                ciJobId
+            })
+        });
 
-            console.log('PUTAAAA\n\n\n');
-            if (response.ok) {
-                const deployment = await response.json();
-                console.log('[Superblocks - Manual Sign Provider] deployment created:\n\n', JSON.stringify(deployment, undefined, 4));
-                return deployment;
-            } else {
-                const error = await response.text();
-                throw new Error(`[Superblocks - Manual Sign Provider] cannot create a deployment for space ${deploymentSpaceId}: ${error}`);
-            }
-        } catch (e) {
-            console.log(e);
+        if (response.ok) {
+            const deployment = await response.json();
+            console.log('[Superblocks - Manual Sign Provider] deployment created:\n\n', JSON.stringify(deployment, undefined, 4));
+            return deployment;
+        } else {
+            const error = await response.text();
+            throw new Error(`[Superblocks - Manual Sign Provider] cannot create a deployment for space ${deploymentSpaceId}: ${error}`);
         }
     }
 }
