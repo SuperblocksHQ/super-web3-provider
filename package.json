@@ -5,6 +5,7 @@
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {
+    "lint": "tslint --config tslint.json --project tsconfig.json",
     "build": "rm -rf dist && tsc",
     "publish-lib": "node publish.js",
     "test": "mocha --require ts-node/register --exit src/**/*spec.ts"
@@ -21,6 +22,7 @@
   "homepage": "https://www.superblocks.com",
   "devDependencies": {
     "@types/bn.js": "^4.11.5",
+    "@types/web3-provider-engine": "^14.0.0",
     "@types/ethereum-protocol": "^1.0.0",
     "@types/mocha": "^5.2.7",
     "@types/node": "^12.12.5",
@@ -30,15 +32,18 @@
     "mocha": "^6.2.2",
     "ts-node": "^8.5.4",
     "ts-sinon": "^1.0.24",
+    "tslint": "^5.20.1",
     "typescript": "^3.5.1"
   },
   "dependencies": {
+    "@truffle/hdwallet-provider": "^1.0.27",
     "ethereum-protocol": "^1.0.1",
     "inversify": "^5.0.1",
     "node-fetch": "^2.6.0",
     "ora": "^4.0.3",
     "pusher-js": "5.0.2 ",
     "reflect-metadata": "^0.1.13",
+    "web3-provider-engine": "^14.0.0",
     "web3-utils": "^1.2.4"
   }
 }

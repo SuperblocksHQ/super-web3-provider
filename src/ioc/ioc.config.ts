@@ -5,7 +5,7 @@ import { TYPES } from './types';
 import { Fetch, Pusher, IManualSignProvider, ISuperblocksUtils, ISuperblocksClient, IPusherClient, IRpcClient } from './interfaces';
 import { SuperblocksUtils } from '../superblocks/utils';
 import { SuperblocksClient } from '../superblocks/superblocks.client';
-import { ManualSignProvider } from '../providers/super.provider';
+import { ManualSignProvider } from '../providers/manual-sign.provider';
 import { PusherClient, getPusherKey, getAuthEndpoint } from '../pusher';
 import { RpcClient } from '../rpc';
 
