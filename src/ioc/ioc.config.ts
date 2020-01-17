@@ -2,10 +2,10 @@ import { Container, ContainerModule } from 'inversify';
 import * as fetch from 'node-fetch';
 import * as pusher from 'pusher-js';
 import { TYPES } from './types';
-import { Fetch, Pusher, IManualSignProvider, ISuperblocksUtils, ISuperblocksClient, IPusherClient, IRpcClient } from './interfaces';
+import { Fetch, Pusher, IManualSignProvider, ISuperblocksUtils, ISuperblocksClient, IPusherClient, IRpcClient, IHDWalletProvider } from './interfaces';
 import { SuperblocksUtils } from '../superblocks/utils';
 import { SuperblocksClient } from '../superblocks/superblocks.client';
-import { ManualSignProvider } from '../providers/manual-sign.provider';
+import { ManualSignProvider, SuperHDWalletProvider } from '../providers';
 import { PusherClient, getPusherKey, getAuthEndpoint } from '../pusher';
 import { RpcClient } from '../rpc';
 
@@ -21,6 +21,7 @@ const thirdPartyDependencies = new ContainerModule((bind) => {
 
 const applicationDependencies = new ContainerModule((bind) => {
     bind<IManualSignProvider>(TYPES.ManualSigningProvider).to(ManualSignProvider);
+    bind<IHDWalletProvider>(TYPES.HDWalletProvider).to(SuperHDWalletProvider);
     bind<ISuperblocksClient>(TYPES.SuperblocksClient).to(SuperblocksClient).inSingletonScope();
     bind<ISuperblocksUtils>(TYPES.SuperblocksUtils).to(SuperblocksUtils).inSingletonScope();
     bind<IPusherClient>(TYPES.PusherClient).to(PusherClient).inSingletonScope();

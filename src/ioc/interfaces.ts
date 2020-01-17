@@ -36,6 +36,25 @@ export interface IManualSignProvider {
     sendAsync(payload: JSONRPCRequestPayload, callback: JSONRPCErrorCallback | JSONRpcCallback): void;
 }
 
+export interface IHDWalletProviderOptions {
+    deploymentSpaceId: string;
+    token: string;
+    mnemonic: string | string[];
+    endpoint: string;
+    networkId: string;
+    provider?: any;
+    addressIndex?: number;
+    numAddresses?: number;
+    shareNonce?: boolean;
+    walletHdPath?: string;
+}
+
+export interface IHDWalletProvider {
+    init?(options: IHDWalletProviderOptions): Promise<void>;
+    send(payload: JSONRPCRequestPayload): Promise<any>;
+    sendAsync(payload: JSONRPCRequestPayload, callback: JSONRPCErrorCallback | JSONRpcCallback): void;
+}
+
 export interface IEventResponse {
     eventName: string;
     message: any;

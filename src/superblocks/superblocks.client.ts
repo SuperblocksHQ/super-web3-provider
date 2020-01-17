@@ -52,6 +52,7 @@ export class SuperblocksClient implements ISuperblocksClient {
     }
 
     async createDeployment(deploymentSpaceId: string, token: string, environment: string, ciJobId?: string): Promise<IDeploymentModel> {
+        console.log('PUTAAAA1\n\n\n');
         try {
             const response = await this.fetch(`${this.utils.getApiBaseUrl()}/deployment-spaces/${deploymentSpaceId}/deployments/`, {
                 method: 'POST',
@@ -66,6 +67,7 @@ export class SuperblocksClient implements ISuperblocksClient {
                 })
             });
 
+            console.log('PUTAAAA\n\n\n');
             if (response.ok) {
                 const deployment = await response.json();
                 console.log('[Superblocks - Manual Sign Provider] deployment created:\n\n', JSON.stringify(deployment, undefined, 4));

@@ -17,3 +17,4 @@
 export * from './manual-sign.provider';
 export * from './manual-sign.provider.facade';
 export * from './hdwallet.provider';
+export * from './hdwallet.provider.facade';
