@@ -32,25 +32,6 @@ export class SuperblocksClient implements ISuperblocksClient {
         this.utils = utils;
     }
 
-    async sendEthTransaction(deploymentId: string, token: string, transaction: ITransactionParamsModel): Promise<ITransactionModel> {
-        const response = await this.fetch(`${this.utils.getApiBaseUrl()}/deployments/${deploymentId}/transactions`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'project-token': token
-            },
-            body: JSON.stringify(transaction)
-        });
-
-        if (response.ok) {
-            const tx = await response.json();
-            return tx;
-        } else {
-            console.log(await response.text());
-            throw new Error('[Superblocks - Manual Sign Provider] The tx could not be sent to Superblocks');
-        }
-    }
-
     async createDeployment(deploymentSpaceId: string, token: string, environment: string, ciJobId?: string): Promise<IDeploymentModel> {
         const response = await this.fetch(`${this.utils.getApiBaseUrl()}/deployment-spaces/${deploymentSpaceId}/deployments/`, {
             method: 'POST',
@@ -67,11 +48,48 @@ export class SuperblocksClient implements ISuperblocksClient {
 
         if (response.ok) {
             const deployment = await response.json();
-            console.log('[Superblocks - Manual Sign Provider] deployment created:\n\n', JSON.stringify(deployment, undefined, 4));
+            console.log('[Superblocks Provider] deployment created:\n\n', JSON.stringify(deployment, undefined, 4));
             return deployment;
         } else {
             const error = await response.text();
-            throw new Error(`[Superblocks - Manual Sign Provider] cannot create a deployment for space ${deploymentSpaceId}: ${error}`);
+            throw new Error(`[Superblocks Provider] cannot create a deployment for space ${deploymentSpaceId}: ${error}`);
+        }
+    }
+
+    async sendEthTransaction(deploymentId: string, token: string, transaction: ITransactionParamsModel): Promise<ITransactionModel> {
+        const response = await this.fetch(`${this.utils.getApiBaseUrl()}/deployments/${deploymentId}/transactions`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'project-token': token
+            },
+            body: JSON.stringify(transaction)
+        });
+
+        if (response.ok) {
+            const tx = await response.json();
+            return tx;
+        } else {
+            console.log(await response.text());
+            throw new Error('[Superblocks Provider] The tx could not be sent to Superblocks');
+        }
+    }
+
+    async addTransactionReceipt(deploymentId: string, token: string, txId: string, txHash: string): Promise<void> {
+        const response = await this.fetch(`${this.utils.getApiBaseUrl()}/deployments/${deploymentId}/transactions/${txId}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'project-token': token
+                },
+                body: JSON.stringify({ txHash })
+        });
+
+        if (response.ok) {
+            return;
+        } else {
+            const error = await response.text();
+            throw new Error(`[Superblocks Provider] The Tx receipt could not be sent to Superblocks': ${error}`);
         }
     }
 }

@@ -5,7 +5,7 @@ import ProviderSubProvider from 'web3-provider-engine/subproviders/provider';
 import { injectable, inject } from 'inversify';
 import { IHDWalletProviderOptions, ISuperblocksClient, ISuperblocksUtils, IHDWalletProvider } from '../ioc/interfaces';
 import { TYPES } from '../ioc/types';
-import { IDeploymentModel, SignMethod } from '../superblocks/models';
+import { IDeploymentModel, SignMethod, ITransactionModel } from '../superblocks/models';
 
 // Debugging tools
 const DEBUG_FLAG = process.env.DEBUG_PROVIDER;
@@ -132,19 +132,20 @@ export class SuperHDWalletProvider implements IHDWalletProvider {
 
         if (payload.method === 'eth_sendTransaction') {
             this.registerTransaction(payload)
-            .then((transaction) => {
-                console.log(transaction);
+                .then((transaction) => {
+                    console.log(transaction);
 
-                // Otherwise, proceed with explicit and expanded parameters
-                this.engine.sendAsync(payload, (err, response) => {
-                    if (payload.method === 'eth_sendTransaction') {
+                    // Otherwise, proceed with explicit and expanded parameters
+                    this.engine.sendAsync(payload, (err, response) => {
                         console.log('\n\n\n\n\n');
                         console.log(payload);
                         console.log(response);
-                    }
 
-                    callback(err, response);
-                });
+                        this.addTransactionReceipt(transaction, response.result)
+                            .then(() => {
+                                callback(err, response);
+                            });
+                    });
             });
         } else {
             // Otherwise, proceed with explicit and expanded parameters
@@ -169,7 +170,17 @@ export class SuperHDWalletProvider implements IHDWalletProvider {
 
             return Promise.reject(error.message);
         }
+    }
 
+    private async addTransactionReceipt(transaction: ITransactionModel, txHash: string) {
+        try {
+            await this.superblocksClient.addTransactionReceipt(this.deployment.id, this.options.token, transaction.id, txHash);
+        } catch (error) {
+            // spinner.fail('[Superblocks - Manual Sign Provider] Failed to send the tx to Superblocks.');
+            console.log('\x1b[31m%s\x1b[0m', 'Error: ', error.message);
+
+            return Promise.reject(error.message);
+        }
     }
 
     private async hookCreateRelease() {
