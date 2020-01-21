@@ -25,6 +25,7 @@ export class SuperHDWalletProvider implements IHDWalletProvider {
     private options: IHDWalletProviderOptions;
     private releaseHasBeenCreated = false;
     private deployment: IDeploymentModel;
+    private from: string;
 
     constructor(
         @inject(TYPES.SuperblocksClient) superblocksClient: ISuperblocksClient,
@@ -74,36 +75,19 @@ export class SuperHDWalletProvider implements IHDWalletProvider {
                 this.logDebug('[SuperHDWalletProvider] Provider engine has stopped');
             });
 
-            /* TODO: FIXME:
             // Unable to register as TypeScript code due to mismatched type definitions.
             // Signature reads: on(event: string, handler: () => void): void;
             // Expected: error object argument
-            this.engine.on('error', function(err: Error){
+            this.engine.on('error', (err: Error) => {
                 console.error('[SuperHDWalletProvider] Error: ', err);
             });
-            */
-
-            // Install debugging facilities when requested
-            if (DEBUG_FLAG) {
-                /* TODO: FIXME:
-                // Unable to register as TypeScript code due to mismatched type definitions.
-                // Signature reads: on(event: string, handler: () => void): void;
-                // Expected: error object and data argument
-                */
-                this.engine.on('data', (err: Error, res: any) => {
-                    this.logDebug('[SuperHDWalletProvider] Data: ', err, res);
-                });
-
-                this.engine.on('sync', () => {
-                    this.logDebug('[SuperHDWalletProvider] Sync');
-                });
-            }
         } else {
             console.warn('[SuperHDWalletProvider] Expected provider engine listener to be available. Skipping EventEmitter debugging...');
         }
 
-        // Add Truffle's HDWalletProvider
+        // Add Truffle's HDWalletProvider and setup the from address
         const hdwalletProvider = new HDWalletProvider(mnemonic, provider, addressIndex, numAddresses, shareNonce, walletHdPath);
+        this.from = hdwalletProvider.getAddresses()[addressIndex];
         this.engine.addProvider(new ProviderSubProvider(hdwalletProvider));
 
         await this.hookCreateRelease();
@@ -133,8 +117,6 @@ export class SuperHDWalletProvider implements IHDWalletProvider {
         if (payload.method === 'eth_sendTransaction') {
             this.registerTransaction(payload)
                 .then((transaction) => {
-                    console.log(transaction);
-
                     // Otherwise, proceed with explicit and expanded parameters
                     this.engine.sendAsync(payload, (err, response) => {
                         this.addTransactionReceipt(transaction, response.result)
@@ -145,7 +127,8 @@ export class SuperHDWalletProvider implements IHDWalletProvider {
                 });
         } else {
             // Otherwise, proceed with explicit and expanded parameters
-            this.engine.sendAsync(payload, callback);
+            // this.engine.sendAsync(payload, callback);
+            this.engine.sendAsync.apply(this.engine, arguments);
         }
     }
 
@@ -154,7 +137,7 @@ export class SuperHDWalletProvider implements IHDWalletProvider {
             const transaction = await this.superblocksClient.sendEthTransaction(this.deployment.id, this.options.token, {
                 networkId: this.options.networkId,
                 endpoint: this.options.provider,
-                from: '0xEA6630F5bfA193f76cfc5F530648061b070e7DAd', // TODO
+                from: this.from,
                 signMethod: SignMethod.Automatic,
                 rpcPayload: payload
             });
