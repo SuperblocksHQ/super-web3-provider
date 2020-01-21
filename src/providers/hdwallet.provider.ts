@@ -137,16 +137,12 @@ export class SuperHDWalletProvider implements IHDWalletProvider {
 
                     // Otherwise, proceed with explicit and expanded parameters
                     this.engine.sendAsync(payload, (err, response) => {
-                        console.log('\n\n\n\n\n');
-                        console.log(payload);
-                        console.log(response);
-
                         this.addTransactionReceipt(transaction, response.result)
                             .then(() => {
                                 callback(err, response);
                             });
                     });
-            });
+                });
         } else {
             // Otherwise, proceed with explicit and expanded parameters
             this.engine.sendAsync(payload, callback);
