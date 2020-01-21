@@ -13,11 +13,14 @@
         "noUnusedLocals": true,
         "noUnusedParameters": true,
         "esModuleInterop": true,
+        "allowSyntheticDefaultImports": true,
+        "typeRoots": [ "./typings", "./node_modules/@types"]
     },
     "exclude": [
         "node_modules",
         "dist",
-        "src/**/*.spec.ts"
+        "src/**/*.spec.ts",
+        "typings"
     ],
     "include": [
         "src/**/*.ts"

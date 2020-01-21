@@ -19,7 +19,7 @@ import web3Utils from 'web3-utils';
 import ora from 'ora';
 import Url from 'url';
 import { JSONRPCRequestPayload, JSONRPCErrorCallback } from 'ethereum-protocol';
-import { ITransactionModel } from '../superblocks/models';
+import { ITransactionModel, SignMethod } from '../superblocks/models';
 import { TYPES } from '../ioc/types';
 import { ISuperblocksClient, IManualSignProvider, IPusherClient, IRpcClient, JSONRpcCallback, IManualSignProviderOptions, ISuperblocksUtils } from '../ioc/interfaces';
 
@@ -131,6 +131,7 @@ export class ManualSignProvider implements IManualSignProvider {
                 networkId,
                 endpoint: this.options.endpoint,
                 from: this.options.from,
+                signMethod: SignMethod.Manual,
                 rpcPayload: payload
             });
         } catch (error) {

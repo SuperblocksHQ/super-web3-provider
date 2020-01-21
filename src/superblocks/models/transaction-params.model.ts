@@ -16,10 +16,16 @@
 
 import { JSONRPCRequestPayload } from 'ethereum-protocol';
 
+export enum SignMethod {
+    Automatic = 'automatic',
+    Manual = 'manual'
+}
+
 export interface ITransactionParamsModel {
     from: string;
     networkId: string;
     endpoint: string;
     rpcPayload: JSONRPCRequestPayload;
     ciJobId?: string;
+    signMethod: SignMethod;
 }

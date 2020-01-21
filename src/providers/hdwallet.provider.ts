@@ -1,22 +1,11 @@
-//
-// Imports and external libraries
 import ProviderEngine from 'web3-provider-engine';
 import { JSONRPCRequestPayload, JSONRPCErrorCallback } from 'ethereum-protocol';
-import Web3ProviderEngine from 'web3-provider-engine';
+import HDWalletProvider from '@truffle/hdwallet-provider';
+import ProviderSubProvider from 'web3-provider-engine/subproviders/provider';
 import { injectable, inject } from 'inversify';
 import { IHDWalletProviderOptions, ISuperblocksClient, ISuperblocksUtils, IHDWalletProvider } from '../ioc/interfaces';
 import { TYPES } from '../ioc/types';
-
-// FIXME: importing involves unaccessible web3 dependencies
-const hdWalletProvider = require('@truffle/hdwallet-provider');
-
-// FIXME: needs manual typings ?
-const providerSubProvider = require('web3-provider-engine/subproviders/provider');
-
-// ATTENTION: Merge ProviderEngine types as they are not correctly done
-interface IWeb3ProviderEngine extends Web3ProviderEngine {
-    on(event: string, handler: (err: Error, res: any) => void): void;
-}
+import { IDeploymentModel, SignMethod } from '../superblocks/models';
 
 // Debugging tools
 const DEBUG_FLAG = process.env.DEBUG_PROVIDER;
@@ -27,7 +16,7 @@ if (DEBUG_FLAG) {
 @injectable()
 export class SuperHDWalletProvider implements IHDWalletProvider {
 
-    public engine: IWeb3ProviderEngine;
+    public engine: ProviderEngine;
 
     // Pre-defined variable setup by the Superblocks CI when executing the job including the deployment process
     private readonly CI_JOB_ID: string = process.env.CI_JOB_ID;
@@ -35,7 +24,7 @@ export class SuperHDWalletProvider implements IHDWalletProvider {
     private superblocksUtils: ISuperblocksUtils;
     private options: IHDWalletProviderOptions;
     private releaseHasBeenCreated = false;
-    // private deployment: IDeploymentModel;
+    private deployment: IDeploymentModel;
 
     constructor(
         @inject(TYPES.SuperblocksClient) superblocksClient: ISuperblocksClient,
@@ -73,7 +62,7 @@ export class SuperHDWalletProvider implements IHDWalletProvider {
         };
 
         // Create new provider-engine
-        this.engine = <IWeb3ProviderEngine> new ProviderEngine();
+        this.engine = new ProviderEngine();
 
         // Install event listeners, if available
         if (this.engine.on !== undefined) {
@@ -114,8 +103,8 @@ export class SuperHDWalletProvider implements IHDWalletProvider {
         }
 
         // Add Truffle's HDWalletProvider
-        const hdwalletProvider = new hdWalletProvider(mnemonic, provider, addressIndex, numAddresses, shareNonce, walletHdPath);
-        this.engine.addProvider(new providerSubProvider(hdwalletProvider));
+        const hdwalletProvider = new HDWalletProvider(mnemonic, provider, addressIndex, numAddresses, shareNonce, walletHdPath);
+        this.engine.addProvider(new ProviderSubProvider(hdwalletProvider));
 
         await this.hookCreateRelease();
 
@@ -140,8 +129,36 @@ export class SuperHDWalletProvider implements IHDWalletProvider {
         // to match the base implementation, the suggested call is as follows:
         // this.engine.sendAsync.apply(this.engine, arguments);
         //
+
+        if (payload.method === 'eth_sendTransaction') {
+            try {
+                const transaction = await this.superblocksClient.sendEthTransaction(this.deployment.id, this.options.token, {
+                    networkId: this.options.networkId,
+                    endpoint: this.options.provider,
+                    from: '0xEA6630F5bfA193f76cfc5F530648061b070e7DAd', // TODO
+                    signMethod: SignMethod.Automatic,
+                    rpcPayload: payload
+                });
+
+                console.log(transaction);
+            } catch (error) {
+                // spinner.fail('[Superblocks - Manual Sign Provider] Failed to send the tx to Superblocks.');
+                console.log('\x1b[31m%s\x1b[0m', 'Error: ', error.message);
+
+                return Promise.reject(error.message);
+            }
+        }
+
         // Otherwise, proceed with explicit and expanded parameters
-        this.engine.sendAsync(payload, callback);
+        this.engine.sendAsync(payload, (err, response) => {
+            if (payload.method === 'eth_sendTransaction') {
+                console.log('\n\n\n\n\n');
+                console.log(payload);
+                console.log(response);
+            }
+
+            callback(err, response);
+        });
     }
 
     private async hookCreateRelease() {
@@ -150,7 +167,7 @@ export class SuperHDWalletProvider implements IHDWalletProvider {
         if (!this.releaseHasBeenCreated) {
             this.logDebug('[hook_createRelease] Calling new Superblocks Release');
 
-            await this.superblocksClient.createDeployment(this.options.deploymentSpaceId, this.options.token, this.superblocksUtils.networkIdToName(this.options.networkId), this.CI_JOB_ID);
+            this.deployment = await this.superblocksClient.createDeployment(this.options.deploymentSpaceId, this.options.token, this.superblocksUtils.networkIdToName(this.options.networkId), this.CI_JOB_ID);
             this.logDebug('[hook_createRelease] Deployment created');
 
             // Mark as done

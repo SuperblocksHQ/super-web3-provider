@@ -20,8 +20,8 @@ const thirdPartyDependencies = new ContainerModule((bind) => {
 });
 
 const applicationDependencies = new ContainerModule((bind) => {
-    bind<IManualSignProvider>(TYPES.ManualSigningProvider).to(ManualSignProvider);
-    bind<IHDWalletProvider>(TYPES.HDWalletProvider).to(SuperHDWalletProvider);
+    bind<IManualSignProvider>(TYPES.ManualSigningProvider).to(ManualSignProvider).inSingletonScope();
+    bind<IHDWalletProvider>(TYPES.HDWalletProvider).to(SuperHDWalletProvider).inSingletonScope();
     bind<ISuperblocksClient>(TYPES.SuperblocksClient).to(SuperblocksClient).inSingletonScope();
     bind<ISuperblocksUtils>(TYPES.SuperblocksUtils).to(SuperblocksUtils).inSingletonScope();
     bind<IPusherClient>(TYPES.PusherClient).to(PusherClient).inSingletonScope();
