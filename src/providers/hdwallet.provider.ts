@@ -122,7 +122,7 @@ export class SuperHDWalletProvider implements IHDWalletProvider {
         return this.engine.send.apply(this.engine, arguments);
     }
 
-    public async sendAsync(payload: JSONRPCRequestPayload, callback: JSONRPCErrorCallback) {
+    public sendAsync(payload: JSONRPCRequestPayload, callback: JSONRPCErrorCallback) {
         // Proceed with base implementation
         //
         // If calling the parent class method synchronously
@@ -131,34 +131,45 @@ export class SuperHDWalletProvider implements IHDWalletProvider {
         //
 
         if (payload.method === 'eth_sendTransaction') {
-            try {
-                const transaction = await this.superblocksClient.sendEthTransaction(this.deployment.id, this.options.token, {
-                    networkId: this.options.networkId,
-                    endpoint: this.options.provider,
-                    from: '0xEA6630F5bfA193f76cfc5F530648061b070e7DAd', // TODO
-                    signMethod: SignMethod.Automatic,
-                    rpcPayload: payload
-                });
-
+            this.registerTransaction(payload)
+            .then((transaction) => {
                 console.log(transaction);
-            } catch (error) {
-                // spinner.fail('[Superblocks - Manual Sign Provider] Failed to send the tx to Superblocks.');
-                console.log('\x1b[31m%s\x1b[0m', 'Error: ', error.message);
 
-                return Promise.reject(error.message);
-            }
+                // Otherwise, proceed with explicit and expanded parameters
+                this.engine.sendAsync(payload, (err, response) => {
+                    if (payload.method === 'eth_sendTransaction') {
+                        console.log('\n\n\n\n\n');
+                        console.log(payload);
+                        console.log(response);
+                    }
+
+                    callback(err, response);
+                });
+            });
+        } else {
+            // Otherwise, proceed with explicit and expanded parameters
+            this.engine.sendAsync(payload, callback);
+        }
+    }
+
+    private async registerTransaction(payload: JSONRPCRequestPayload) {
+        try {
+            const transaction = await this.superblocksClient.sendEthTransaction(this.deployment.id, this.options.token, {
+                networkId: this.options.networkId,
+                endpoint: this.options.provider,
+                from: '0xEA6630F5bfA193f76cfc5F530648061b070e7DAd', // TODO
+                signMethod: SignMethod.Automatic,
+                rpcPayload: payload
+            });
+
+            return Promise.resolve(transaction);
+        } catch (error) {
+            // spinner.fail('[Superblocks - Manual Sign Provider] Failed to send the tx to Superblocks.');
+            console.log('\x1b[31m%s\x1b[0m', 'Error: ', error.message);
+
+            return Promise.reject(error.message);
         }
 
-        // Otherwise, proceed with explicit and expanded parameters
-        this.engine.sendAsync(payload, (err, response) => {
-            if (payload.method === 'eth_sendTransaction') {
-                console.log('\n\n\n\n\n');
-                console.log(payload);
-                console.log(response);
-            }
-
-            callback(err, response);
-        });
     }
 
     private async hookCreateRelease() {
