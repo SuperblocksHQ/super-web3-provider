@@ -18,6 +18,7 @@ import { ITransactionModel, IDeploymentModel, ITransactionParamsModel } from './
 import { injectable, inject } from 'inversify';
 import { TYPES } from '../ioc/types';
 import { Fetch, ISuperblocksUtils, ISuperblocksClient } from '../ioc/interfaces';
+import { Response } from 'node-fetch';
 
 @injectable()
 export class SuperblocksClient implements ISuperblocksClient {
@@ -57,7 +58,7 @@ export class SuperblocksClient implements ISuperblocksClient {
     }
 
     async sendEthTransaction(deploymentId: string, token: string, transaction: ITransactionParamsModel): Promise<ITransactionModel> {
-        const response = await this.fetch(`${this.utils.getApiBaseUrl()}/deployments/${deploymentId}/transactions`, {
+        const response = <Response> await this.fetch(`${this.utils.getApiBaseUrl()}/deployments/${deploymentId}/transactions`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -70,8 +71,7 @@ export class SuperblocksClient implements ISuperblocksClient {
             const tx = await response.json();
             return tx;
         } else {
-            console.log(await response.text());
-            throw new Error('[Superblocks Provider] The tx could not be sent to Superblocks');
+            throw new Error(`[Superblocks Provider] The tx could not be sent to Superblocks. Status Code: ${response.status}`);
         }
     }
 

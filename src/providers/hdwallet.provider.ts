@@ -78,9 +78,9 @@ export class SuperHDWalletProvider implements IHDWalletProvider {
             // Unable to register as TypeScript code due to mismatched type definitions.
             // Signature reads: on(event: string, handler: () => void): void;
             // Expected: error object argument
-            this.engine.on('error', (err: Error) => {
-                console.error('[SuperHDWalletProvider] Error: ', err);
-            });
+            // this.engine.on('error', (err: Error) => {
+            //     console.error('[SuperHDWalletProvider] Error: ', err);
+            // });
         } else {
             console.warn('[SuperHDWalletProvider] Expected provider engine listener to be available. Skipping EventEmitter debugging...');
         }
@@ -97,23 +97,12 @@ export class SuperHDWalletProvider implements IHDWalletProvider {
         this.engine.start();
     }
 
-    public send(_payload: JSONRPCRequestPayload): Promise<any> {
-
-        // Hook external call
-        this.hookBeforeSend();
-
+    public send(_payload: JSONRPCRequestPayload): any {
         // Proceed with base implementation
         return this.engine.send.apply(this.engine, arguments);
     }
 
     public sendAsync(payload: JSONRPCRequestPayload, callback: JSONRPCErrorCallback) {
-        // Proceed with base implementation
-        //
-        // If calling the parent class method synchronously
-        // to match the base implementation, the suggested call is as follows:
-        // this.engine.sendAsync.apply(this.engine, arguments);
-        //
-
         if (payload.method === 'eth_sendTransaction') {
             this.registerTransaction(payload)
                 .then((transaction) => {
@@ -122,12 +111,16 @@ export class SuperHDWalletProvider implements IHDWalletProvider {
                         this.addTransactionReceipt(transaction, response.result)
                             .then(() => {
                                 callback(err, response);
+                            })
+                            .catch((e) => {
+                                callback(e, null);
                             });
                     });
+                })
+                .catch((err) => {
+                    callback(err, null);
                 });
         } else {
-            // Otherwise, proceed with explicit and expanded parameters
-            // this.engine.sendAsync(payload, callback);
             this.engine.sendAsync.apply(this.engine, arguments);
         }
     }
@@ -166,26 +159,15 @@ export class SuperHDWalletProvider implements IHDWalletProvider {
         // In case the connected operations lead to side effects,
         // only call it once.
         if (!this.releaseHasBeenCreated) {
-            this.logDebug('[hook_createRelease] Calling new Superblocks Release');
+            this.logDebug('[SuperHDWalletProvider] Calling new Superblocks Release');
 
             this.deployment = await this.superblocksClient.createDeployment(this.options.deploymentSpaceId, this.options.token, this.superblocksUtils.networkIdToName(this.options.networkId), this.CI_JOB_ID);
-            this.logDebug('[hook_createRelease] Deployment created');
+            this.logDebug('[SuperHDWalletProvider] Deployment created');
 
             // Mark as done
             this.releaseHasBeenCreated = true;
-            this.logDebug('[hook_createRelease] New Superblocks Release has been created');
+            this.logDebug('[SuperHDWalletProvider] New Superblocks Release has been created');
         }
-    }
-
-    /**
-     * Connect custom operations to be performed before send
-     */
-    private hookBeforeSend() {
-        this.logDebug('[hook_before_send] Intercepting send');
-
-        // Do not call any asynchronous function inside synchronous codepath
-        // If createRelease involves asynchronous functions, skip it
-        // hook_createRelease();
     }
 
     private logDebug(...argv: any[]) {
