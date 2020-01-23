@@ -29,6 +29,14 @@ import { JSONRPCRequestPayload, JSONRPCResponsePayload } from 'ethereum-protocol
 /* tslint:disable:max-classes-per-file */
 
 class TestSuperblocksClient implements ISuperblocksClient {
+
+    addTransactionReceipt(deploymentId: string, token: string, txId: string, txHash: string): Promise<void> {
+        (deploymentId);
+        (token);
+        (txId);
+        (txHash);
+        return Promise.resolve();
+    }
     sendEthTransaction(deploymentId: string, _token: string, transaction: ITransactionParamsModel): Promise<ITransactionModel> {
         return Promise.resolve({
                 id: '1234',
@@ -400,6 +408,13 @@ describe('ManualSignProvider:', () => {
 
         it('fails to send message via Rest API due to Superblocks Client failure', async () => {
             class MockSuperblocksClient implements ISuperblocksClient {
+                addTransactionReceipt(deploymentId: string, token: string, txId: string, txHash: string): Promise<void> {
+                    (deploymentId);
+                    (token);
+                    (txId);
+                    (txHash);
+                    return Promise.resolve();
+                }
                 sendEthTransaction(_deploymentId: string, _token: string, _transaction: ITransactionParamsModel): Promise<ITransactionModel> {
                     throw new Error('sendEthTransaction exception');
                 }
@@ -600,6 +615,13 @@ describe('ManualSignProvider:', () => {
 
         it('fails to send message via Rest API due to Superblocks Client failure', async () => {
             class MockSuperblocksClient implements ISuperblocksClient {
+                addTransactionReceipt(deploymentId: string, token: string, txId: string, txHash: string): Promise<void> {
+                    (deploymentId);
+                    (token);
+                    (txId);
+                    (txHash);
+                    return Promise.resolve();
+                }
                 sendEthTransaction(_deploymentId: string, _token: string, _transaction: ITransactionParamsModel): Promise<ITransactionModel> {
                     throw new Error('sendEthTransaction exception');
                 }

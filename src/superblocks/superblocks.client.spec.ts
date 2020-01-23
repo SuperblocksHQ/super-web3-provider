@@ -112,7 +112,7 @@ describe('SuperblocksClient:', () => {
         });
 
         it('fails to create a deployment due to API error response', async () => {
-            const deploymentSpaceId = 'deploymentSpaceId01234567890';
+            const deploymentSpaceId = 'space123';
             const userToken = 'userToken0987654321';
             const environment = 'environment1234567890';
 
@@ -129,7 +129,7 @@ describe('SuperblocksClient:', () => {
             try {
                 await superblocksClient.createDeployment(deploymentSpaceId, userToken, environment);
             } catch (e) {
-                assert.deepStrictEqual(e.message, '[Superblocks client] cannot create a deployment: {"message":"This is an error"}');
+                assert.deepStrictEqual(e.message, '[Superblocks Provider] cannot create a deployment for space space123: {"message":"This is an error"}');
             }
         });
     });
