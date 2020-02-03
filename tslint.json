@@ -56,7 +56,7 @@
         "typedef": [ false, "call-signature", "parameter", "property-declaration", "variable-declaration", "member-variable-declaration" ],
         "typedef-whitespace": [ true, { "call-signature":"nospace", "index-signature":"nospace", "parameter":"nospace", "property-declaration":"nospace", "variable-declaration":"nospace" } ],
         "variable-name": [ true, "check-format", "allow-leading-underscore", "ban-keywords" ],
-        "whitespace": [ true, "check-branch", "check-decl", "check-operator", "check-separator", "check-type" ]
+        "whitespace": [ true, "check-branch", "check-decl", "check-operator", "check-separator", "check-type", "check-module" ]
     },
     "rulesDirectory": []
 }
