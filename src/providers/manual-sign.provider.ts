@@ -27,7 +27,6 @@ import { ISuperblocksClient, IManualSignProvider, IPusherClient, IRpcClient, JSO
 export class ManualSignProvider implements IManualSignProvider {
 
     // Pre-defined variable setup by the Superblocks CI when executing the job including the deployment process
-    private readonly CI_JOB_ID: string = process.env.CI_JOB_ID;
     private superblocksClient: ISuperblocksClient;
     private pusherClient: IPusherClient;
     private rpcClient: IRpcClient;
@@ -81,8 +80,8 @@ export class ManualSignProvider implements IManualSignProvider {
         this.options = options;
         this.pendingToSignTxs = new Map();
 
-        // Let make sure we crete a new deployment on every init in order to group txs together
-        const deployment = await this.superblocksClient.createDeployment(options.deploymentSpaceId, options.token, this.superblocksUtils.networkIdToName(options.networkId), this.CI_JOB_ID);
+        // Let make sure we create a new deployment on every init in order to group txs together
+        const deployment = await this.superblocksClient.createDeployment(options.deploymentSpaceId, options.token, this.superblocksUtils.networkIdToName(options.networkId), this.superblocksUtils.createDefaultMetadata(options.metadata));
         this.deploymentId = deployment.id;
     }
 
