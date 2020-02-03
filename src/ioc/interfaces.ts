@@ -1,6 +1,6 @@
 import fetch from 'node-fetch';
 import pusher from 'pusher-js';
-import { ITransactionModel, ITransactionParamsModel, IDeploymentModel } from '../superblocks/models';
+import { ITransactionModel, ITransactionParamsModel, IDeploymentModel, IMetadataModel } from '../superblocks/models';
 import { JSONRPCErrorCallback, JSONRPCRequestPayload, JSONRPCResponsePayload } from 'ethereum-protocol';
 
 export type Fetch = typeof fetch.prototype;
@@ -9,10 +9,11 @@ export type Pusher = typeof pusher.prototype;
 export interface ISuperblocksUtils {
     getApiBaseUrl: () => string;
     networkIdToName: (networkId: string) => string;
+    createDefaultMetadata: (metadata: IMetadataModel) => IMetadataModel;
 }
 
 export interface ISuperblocksClient {
-    createDeployment(deploymentSpaceId: string, token: string, networkId: string, ciJobId?: string): Promise<IDeploymentModel>;
+    createDeployment(deploymentSpaceId: string, token: string, networkId: string, metadata?: IMetadataModel): Promise<IDeploymentModel>;
     sendEthTransaction(deploymentId: string, token: string, transaction: ITransactionParamsModel): Promise<ITransactionModel>;
     addTransactionReceipt(deploymentId: string, token: string, txId: string, txHash: string): Promise<void>;
 }
@@ -27,6 +28,7 @@ export interface IManualSignProviderOptions {
     from: string;
     endpoint: string;
     networkId: string;
+    metadata?: IMetadataModel;
 }
 
 export interface IManualSignProvider {
@@ -47,6 +49,7 @@ export interface IHDWalletProviderOptions {
     numAddresses?: number;
     shareNonce?: boolean;
     walletHdPath?: string;
+    metadata: IMetadataModel;
 }
 
 export interface IHDWalletProvider {
