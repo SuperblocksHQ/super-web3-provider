@@ -18,3 +18,5 @@ export * from './transaction.model';
 export * from './apiError.model';
 export * from './transaction-params.model';
 export * from './deployment.model';
+export * from './job.model';
+export * from './metadata.model';
