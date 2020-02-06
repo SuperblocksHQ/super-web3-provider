@@ -58,13 +58,13 @@ export class SuperblocksUtils implements ISuperblocksUtils {
             currentJobId = currentJob.id;
         }
 
-        // env variables from metadata object, Superblocks, Circle CI, Gitlab and Jenkins respectively
+        // env variables from metadata object, Superblocks, Circle CI, Travis CI, Gitlab and Jenkins respectively
         return {
-            jobId : jobId || currentJobId || env.CIRCLE_WORKFLOW_ID || env.CI_JOB_ID || env.BUILD_ID,
-            jobURL : jobURL || env.CIRCLE_BUILD_URL || env.CI_JOB_URL || env.BUILD_URL,
-            description : description || env.SUPER_COMMIT_DESCRIPTION || env.CI_COMMIT_MESSAGE,
-            hash : hash || env.SUPER_COMMIT_SHA1 || env.CIRCLE_SHA1 || env.CI_COMMIT_SHA,
-            branch : branch || env.SUPER_COMMIT_BRANCH || env.CIRCLE_BRANCH || env.COMMIT_BRANCH,
+            jobId : jobId || currentJobId || env.CIRCLE_WORKFLOW_ID || env.TRAVIS_JOB_ID || env.CI_JOB_ID || env.BUILD_ID,
+            jobURL : jobURL || env.CIRCLE_BUILD_URL || env.CI_JOB_URL || env.TRAVIS_JOB_WEB_URL || env.BUILD_URL,
+            description : description || env.SUPER_COMMIT_DESCRIPTION || env.CI_COMMIT_MESSAGE || env.TRAVIS_COMMIT_MESSAGE,
+            hash : hash || env.SUPER_COMMIT_SHA1 || env.CIRCLE_SHA1 || env.TRAVIS_COMMIT || env.CI_COMMIT_SHA,
+            branch : branch || env.SUPER_COMMIT_BRANCH || env.CIRCLE_BRANCH || env.TRAVIS_PULL_REQUEST_BRANCH || env.CI_COMMIT_REF_NAME || env.COMMIT_BRANCH,
             branchUrl : branchUrl || env.SUPER_COMMIT_BRANCH_URL || env.CIRCLE_REPOSITORY_URL || env.CI_REPOSITORY_URL,
             commitUrl : commitUrl || env.SUPER_COMMIT_URL,
             buildConfigId : buildConfigId || env.SUPER_BUILD_CONFIG_ID,
