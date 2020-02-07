@@ -1,4 +1,5 @@
 export interface IMetadataModel {
+    ciJobId?: string;
     jobId?: string;
     jobURL?: string;
     description?: string;

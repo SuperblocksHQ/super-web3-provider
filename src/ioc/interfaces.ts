@@ -9,7 +9,7 @@ export type Pusher = typeof pusher.prototype;
 export interface ISuperblocksUtils {
     getApiBaseUrl: () => string;
     networkIdToName: (networkId: string) => string;
-    createDefaultMetadata: (metadata: IMetadataModel) => IMetadataModel;
+    createDefaultMetadata: (metadata: IMetadataModel, ciJobId: string) => IMetadataModel;
 }
 
 export interface ISuperblocksClient {
