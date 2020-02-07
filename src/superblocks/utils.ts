@@ -16,7 +16,7 @@
 
 import { injectable } from 'inversify';
 import { ISuperblocksUtils } from '../ioc/interfaces';
-import { IMetadataModel } from "./models";
+import { ICustomMetadataModel, IMetadataModel } from './models';
 
 @injectable()
 export class SuperblocksUtils implements ISuperblocksUtils {
@@ -47,8 +47,8 @@ export class SuperblocksUtils implements ISuperblocksUtils {
     }
     }
 
-    createDefaultMetadata(metadata: IMetadataModel, ciJobId: string): IMetadataModel{
-        let { jobId, jobURL, description, hash, branch, branchUrl, commitUrl, buildConfigId } = metadata || {};
+    createDefaultMetadata(metadata: ICustomMetadataModel, ciJobId: string): IMetadataModel {
+        const { jobId, jobURL, description, hash, branch, branchUrl, commitUrl } = metadata || {};
         const { env } = process;
 
         // env variables from metadata object, Superblocks, Circle CI, Travis CI, Gitlab and Jenkins respectively
@@ -61,9 +61,9 @@ export class SuperblocksUtils implements ISuperblocksUtils {
             branch : branch || env.SUPER_COMMIT_BRANCH || env.CIRCLE_BRANCH || env.TRAVIS_PULL_REQUEST_BRANCH || env.CI_COMMIT_REF_NAME || env.COMMIT_BRANCH,
             branchUrl : branchUrl || env.SUPER_COMMIT_BRANCH_URL || env.CIRCLE_REPOSITORY_URL || env.CI_REPOSITORY_URL,
             commitUrl : commitUrl || env.SUPER_COMMIT_URL,
-            buildConfigId : buildConfigId || env.SUPER_BUILD_CONFIG_ID,
+            buildConfigId : env.SUPER_BUILD_CONFIG_ID,
             superblocks: env.SUPER_CI || 'false'
-        }
+        };
     }
 }
 
