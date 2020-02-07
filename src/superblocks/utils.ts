@@ -53,7 +53,6 @@ export class SuperblocksUtils implements ISuperblocksUtils {
 
         // env variables from metadata object, Superblocks, Circle CI, Travis CI, Gitlab and Jenkins respectively
         return {
-            ciJobId,
             jobId : jobId || env.CIRCLE_WORKFLOW_ID || env.TRAVIS_JOB_ID || env.CI_JOB_ID || env.BUILD_ID,
             jobURL : jobURL || env.CIRCLE_BUILD_URL || env.CI_JOB_URL || env.TRAVIS_JOB_WEB_URL || env.BUILD_URL,
             description : description || env.SUPER_COMMIT_DESCRIPTION || env.CI_COMMIT_MESSAGE || env.TRAVIS_COMMIT_MESSAGE,
@@ -61,6 +60,7 @@ export class SuperblocksUtils implements ISuperblocksUtils {
             branch : branch || env.SUPER_COMMIT_BRANCH || env.CIRCLE_BRANCH || env.TRAVIS_PULL_REQUEST_BRANCH || env.CI_COMMIT_REF_NAME || env.COMMIT_BRANCH,
             branchUrl : branchUrl || env.SUPER_COMMIT_BRANCH_URL || env.CIRCLE_REPOSITORY_URL || env.CI_REPOSITORY_URL,
             commitUrl : commitUrl || env.SUPER_COMMIT_URL,
+            ciJobId,
             buildConfigId : env.SUPER_BUILD_CONFIG_ID,
             superblocks: env.SUPER_CI || 'false'
         };
