@@ -1,5 +1,4 @@
-export interface IMetadataModel {
-    ciJobId?: string;
+export interface ICustomMetadataModel {
     jobId?: string;
     jobURL?: string;
     description?: string;
@@ -7,6 +6,10 @@ export interface IMetadataModel {
     branch?: string;
     branchUrl?: string;
     commitUrl?: string;
+}
+
+export interface IMetadataModel extends ICustomMetadataModel {
+    ciJobId?: string;
     buildConfigId?: string;
     superblocks?: string;
 }
