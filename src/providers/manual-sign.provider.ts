@@ -82,7 +82,12 @@ export class ManualSignProvider implements IManualSignProvider {
         this.pendingToSignTxs = new Map();
 
         // Let make sure we create a new deployment on every init in order to group txs together
-        const deployment = await this.superblocksClient.createDeployment(options.deploymentSpaceId, options.token, this.superblocksUtils.networkIdToName(options.networkId), this.superblocksUtils.createDefaultMetadata(options.metadata, this.CI_JOB_ID));
+        const deployment = await this.superblocksClient.createDeployment(
+            options.deploymentSpaceId,
+            options.token,
+            this.superblocksUtils.networkIdToName(options.networkId),
+            this.superblocksUtils.createDefaultMetadata(options.metadata, this.CI_JOB_ID)
+        );
         this.deploymentId = deployment.id;
     }
 
