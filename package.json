@@ -1,6 +1,6 @@
 {
   "name": "super-web3-provider",
-  "version": "0.0.16-beta.2",
+  "version": "0.0.16",
   "description": "Web3 provider to create a secure channel between our CI runners and the Superblocks platform to handle Smart Contract deployments through our blockchain dedicated DevOps platform",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -23,7 +23,6 @@
   "devDependencies": {
     "@types/ethereum-protocol": "^1.0.0",
     "@types/mocha": "^5.2.7",
-    "@types/node": "^12.12.5",
     "@types/node-fetch": "^2.5.3",
     "@types/pusher-js": "^4.2.2",
     "fetch-mock": "^8.0.1",
