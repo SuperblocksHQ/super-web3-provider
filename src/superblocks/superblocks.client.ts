@@ -14,7 +14,7 @@
 // You should have received a copy of the GNU General Public License
 // along with Superblocks.  If not, see <http://www.gnu.org/licenses/>.
 // import fetch from 'node-fetch';
-import { ITransactionModel, IDeploymentModel, ITransactionParamsModel } from './models';
+import { ITransactionModel, IDeploymentModel, ITransactionParamsModel, IMetadataModel } from './models';
 import { injectable, inject } from 'inversify';
 import { TYPES } from '../ioc/types';
 import { Fetch, ISuperblocksUtils, ISuperblocksClient } from '../ioc/interfaces';
@@ -33,7 +33,7 @@ export class SuperblocksClient implements ISuperblocksClient {
         this.utils = utils;
     }
 
-    async createDeployment(deploymentSpaceId: string, token: string, environment: string, ciJobId?: string): Promise<IDeploymentModel> {
+    async createDeployment(deploymentSpaceId: string, token: string, environment: string, metadata?: IMetadataModel): Promise<IDeploymentModel> {
         const response = await this.fetch(`${this.utils.getApiBaseUrl()}/deployment-spaces/${deploymentSpaceId}/deployments/`, {
             method: 'POST',
             headers: {
@@ -43,7 +43,7 @@ export class SuperblocksClient implements ISuperblocksClient {
             body: JSON.stringify({
                 environment,
                 type: 'ethereum',
-                ciJobId
+                metadata
             })
         });
 
