@@ -89,6 +89,10 @@ export class ManualSignProvider implements IManualSignProvider {
             this.superblocksUtils.createDefaultMetadata(options.metadata, this.CI_JOB_ID)
         );
         this.deploymentId = deployment.id;
+
+        if (options.saveArtifacts) {
+            this.superblocksUtils.saveArtifacts(deployment.id, options.token);
+        }
     }
 
     public getAccounts(): Promise<string[]> {
