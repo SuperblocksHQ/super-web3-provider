@@ -12,7 +12,7 @@ export interface ISuperblocksUtils {
 }
 
 export interface ISuperblocksClient {
-    createDeployment(deploymentSpaceId: string, token: string, networkId: string, ciJobId?: string): Promise<IDeploymentModel>;
+    createDeployment(projectId: string, token: string, networkId: string, ciJobId?: string): Promise<IDeploymentModel>;
     sendEthTransaction(deploymentId: string, token: string, transaction: ITransactionParamsModel): Promise<ITransactionModel>;
     addTransactionReceipt(deploymentId: string, token: string, txId: string, txHash: string): Promise<void>;
 }
@@ -22,7 +22,7 @@ export interface IRpcClient {
 }
 
 export interface IManualSignProviderOptions {
-    deploymentSpaceId: string;
+    projectId: string;
     token: string;
     from: string;
     endpoint: string;
@@ -38,7 +38,7 @@ export interface IManualSignProvider {
 }
 
 export interface IHDWalletProviderOptions {
-    deploymentSpaceId: string;
+    projectId: string;
     token: string;
     mnemonic: string | string[];
     provider: any;
