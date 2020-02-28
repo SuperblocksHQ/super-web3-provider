@@ -81,8 +81,13 @@ export class ManualSignProvider implements IManualSignProvider {
         this.options = options;
         this.pendingToSignTxs = new Map();
 
-        // Let make sure we crete a new deployment on every init in order to group txs together
-        const deployment = await this.superblocksClient.createDeployment(options.projectId, options.token, this.superblocksUtils.networkIdToName(options.networkId), this.CI_JOB_ID);
+        // Let make sure we create a new deployment on every init in order to group txs together
+        const deployment = await this.superblocksClient.createDeployment(
+            options.projectId,
+            options.token,
+            this.superblocksUtils.networkIdToName(options.networkId),
+            this.superblocksUtils.createDefaultMetadata(options.metadata, this.CI_JOB_ID)
+        );
         this.deploymentId = deployment.id;
     }
 
@@ -91,9 +96,6 @@ export class ManualSignProvider implements IManualSignProvider {
     }
 
     public sendMessage(payload: JSONRPCRequestPayload, networkId: string): Promise<any> {
-        // console.log('SENDING MESSAGE\n\n');
-        // console.log(payload.method);
-
         if (payload.method === 'eth_accounts') {
             return this.getAccounts();
         } else if (payload.method === 'eth_sendTransaction' || payload.method === 'eth_sign') {

@@ -20,7 +20,7 @@ import * as sinon from 'ts-sinon';
 import { SinonSandbox } from 'sinon';
 import { ManualSignProvider } from './manual-sign.provider';
 import { ISuperblocksClient, IPusherClient, IRpcClient, IEventResponse, IManualSignProvider, ISuperblocksUtils } from '../ioc/interfaces';
-import { ITransactionModel, IDeploymentModel, ITransactionParamsModel, TransactionStatus } from '../superblocks/models';
+import { ITransactionModel, IDeploymentModel, ITransactionParamsModel, TransactionStatus, IMetadataModel } from '../superblocks/models';
 import { JSONRPCRequestPayload, JSONRPCResponsePayload } from 'ethereum-protocol';
 
 
@@ -87,6 +87,9 @@ class TestSuperblocksUtils implements ISuperblocksUtils {
     }
     networkIdToName(_networkId: string) {
         return 'someName';
+    }
+    createDefaultMetadata(_metadata: IMetadataModel) {
+        return {};
     }
 }
 

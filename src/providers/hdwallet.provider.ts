@@ -44,7 +44,8 @@ export class SuperHDWalletProvider implements IHDWalletProvider {
         addressIndex = 0,
         numAddresses = 10,
         shareNonce = true,
-        walletHdPath = `m/44'/60'/0'/0/`
+        walletHdPath = `m/44'/60'/0'/0/`,
+        metadata= {}
     }: IHDWalletProviderOptions) {
         console.info('[SuperHDWalletProvider] Initializing...');
 
@@ -59,7 +60,8 @@ export class SuperHDWalletProvider implements IHDWalletProvider {
             addressIndex,
             numAddresses,
             shareNonce,
-            walletHdPath
+            walletHdPath,
+            metadata
         };
 
         // Create new provider-engine
@@ -161,7 +163,8 @@ export class SuperHDWalletProvider implements IHDWalletProvider {
         if (!this.releaseHasBeenCreated) {
             this.logDebug('[SuperHDWalletProvider] Calling new Superblocks Release');
 
-            this.deployment = await this.superblocksClient.createDeployment(this.options.projectId, this.options.token, this.superblocksUtils.networkIdToName(this.options.networkId), this.CI_JOB_ID);
+            const { projectId, networkId, metadata } = this.options;
+            this.deployment = await this.superblocksClient.createDeployment(projectId, this.options.token, this.superblocksUtils.networkIdToName(networkId), this.superblocksUtils.createDefaultMetadata(metadata, this.CI_JOB_ID));
             this.logDebug('[SuperHDWalletProvider] Deployment created');
 
             // Mark as done

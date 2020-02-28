@@ -9,7 +9,7 @@ Web3 provider to create a secure channel between our CI runners and the Superblo
 This provider allows you to track and manually securely sign your Txs using Metamask, Ledger or Trezor inside the Superblocks platform. 
 
 
-## HDWallet Provider (Coming Soon)
+## HDWallet Provider
 A minimal custom HD Ethereum wallet provider based on MetaMask's provider engine library and Truffle's [HDWalletProvider](https://github.com/trufflesuite/truffle/tree/develop/packages/hdwallet-provider) provider package.
 
 ### Why using this custom HDWallet provider? 
