@@ -116,7 +116,7 @@ describe('SuperblocksClient:', () => {
             const userToken = 'userToken0987654321';
             const environment = 'environment1234567890';
 
-            const mockFetch = fetchMock.sandbox().post(`https://some-url/deployment-spaces/${projectId}/deployments/`,
+            const mockFetch = fetchMock.sandbox().post(`https://some-url/build-configs/${projectId}/deployments/`,
                 <MockResponse>{
                     status: 400,
                     body: {
@@ -129,7 +129,7 @@ describe('SuperblocksClient:', () => {
             try {
                 await superblocksClient.createDeployment(projectId, userToken, environment);
             } catch (e) {
-                assert.deepStrictEqual(e.message, '[Superblocks Provider] cannot create a deployment for space space123: {"message":"This is an error"}');
+                assert.deepStrictEqual(e.message, '[Superblocks Provider] cannot create a deployment for project space123: {"message":"This is an error"}');
             }
         });
     });
