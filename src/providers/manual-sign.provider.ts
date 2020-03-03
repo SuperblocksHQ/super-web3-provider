@@ -74,8 +74,8 @@ export class ManualSignProvider implements IManualSignProvider {
             throw new Error('The property network: is required to be set and needs to be a valid number');
         } else if (!options.token || options.token === '') {
             throw new Error('The property token: is required to be set');
-        } else if (!options.deploymentSpaceId || options.deploymentSpaceId === '') {
-            throw new Error('The property deploymentSpaceId: is required to be set');
+        } else if (!options.projectId || options.projectId === '') {
+            throw new Error('The property projectId: is required to be set');
         }
 
         this.options = options;
@@ -83,7 +83,7 @@ export class ManualSignProvider implements IManualSignProvider {
 
         // Let make sure we create a new deployment on every init in order to group txs together
         const deployment = await this.superblocksClient.createDeployment(
-            options.deploymentSpaceId,
+            options.projectId,
             options.token,
             this.superblocksUtils.networkIdToName(options.networkId),
             this.superblocksUtils.createDefaultMetadata(options.metadata, this.CI_JOB_ID)
@@ -100,9 +100,6 @@ export class ManualSignProvider implements IManualSignProvider {
     }
 
     public sendMessage(payload: JSONRPCRequestPayload, networkId: string): Promise<any> {
-        // console.log('SENDING MESSAGE\n\n');
-        // console.log(payload.method);
-
         if (payload.method === 'eth_accounts') {
             return this.getAccounts();
         } else if (payload.method === 'eth_sendTransaction' || payload.method === 'eth_sign') {

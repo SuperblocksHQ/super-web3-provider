@@ -36,7 +36,7 @@ export class SuperHDWalletProvider implements IHDWalletProvider {
     }
 
     public async init({
-        deploymentSpaceId,
+        projectId,
         token,
         mnemonic,
         provider,
@@ -52,7 +52,7 @@ export class SuperHDWalletProvider implements IHDWalletProvider {
         // TODO - Add validation to everything
 
         this.options = {
-            deploymentSpaceId,
+            projectId,
             token,
             mnemonic,
             provider,
@@ -163,8 +163,8 @@ export class SuperHDWalletProvider implements IHDWalletProvider {
         if (!this.releaseHasBeenCreated) {
             this.logDebug('[SuperHDWalletProvider] Calling new Superblocks Release');
 
-            const { deploymentSpaceId, networkId, metadata } = this.options;
-            this.deployment = await this.superblocksClient.createDeployment(deploymentSpaceId, this.options.token, this.superblocksUtils.networkIdToName(networkId), this.superblocksUtils.createDefaultMetadata(metadata, this.CI_JOB_ID));
+            const { projectId, networkId, metadata } = this.options;
+            this.deployment = await this.superblocksClient.createDeployment(projectId, this.options.token, this.superblocksUtils.networkIdToName(networkId), this.superblocksUtils.createDefaultMetadata(metadata, this.CI_JOB_ID));
             this.logDebug('[SuperHDWalletProvider] Deployment created');
 
             if (this.options.saveArtifacts) {

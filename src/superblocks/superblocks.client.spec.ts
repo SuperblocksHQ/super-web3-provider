@@ -88,11 +88,11 @@ describe('SuperblocksClient:', () => {
 
     describe('createDeployment:', () => {
         it('creates a new Superblocks deployment', () => {
-            const deploymentSpaceId = 'deploymentSpaceId01234567890';
+            const projectId = 'projectId01234567890';
             const userToken = 'userToken0987654321';
             const environment = 'environment1234567890';
 
-            const mockFetch = fetchMock.sandbox().post(`https://some-url/deployment-spaces/${deploymentSpaceId}/deployments/`,
+            const mockFetch = fetchMock.sandbox().post(`https://some-url/deployment-spaces/${projectId}/deployments/`,
                 <MockResponse>{
                     status: 201,
                     body: {
@@ -104,7 +104,7 @@ describe('SuperblocksClient:', () => {
 
             let deploymentResponse: IDeploymentModel;
             assert.doesNotThrow(async () => {
-                deploymentResponse = await superblocksClient.createDeployment(deploymentSpaceId, userToken, environment);
+                deploymentResponse = await superblocksClient.createDeployment(projectId, userToken, environment);
                 assert.deepStrictEqual(deploymentResponse, {
                     id: 'id'
                 });
@@ -112,11 +112,11 @@ describe('SuperblocksClient:', () => {
         });
 
         it('fails to create a deployment due to API error response', async () => {
-            const deploymentSpaceId = 'space123';
+            const projectId = 'space123';
             const userToken = 'userToken0987654321';
             const environment = 'environment1234567890';
 
-            const mockFetch = fetchMock.sandbox().post(`https://some-url/deployment-spaces/${deploymentSpaceId}/deployments/`,
+            const mockFetch = fetchMock.sandbox().post(`https://some-url/build-configs/${projectId}/deployments/`,
                 <MockResponse>{
                     status: 400,
                     body: {
@@ -127,9 +127,9 @@ describe('SuperblocksClient:', () => {
             superblocksClient = new SuperblocksClient(mockFetch, mockUtils);
 
             try {
-                await superblocksClient.createDeployment(deploymentSpaceId, userToken, environment);
+                await superblocksClient.createDeployment(projectId, userToken, environment);
             } catch (e) {
-                assert.deepStrictEqual(e.message, '[Superblocks Provider] cannot create a deployment for space space123: {"message":"This is an error"}');
+                assert.deepStrictEqual(e.message, '[Superblocks Provider] cannot create a deployment for project space123: {"message":"This is an error"}');
             }
         });
     });

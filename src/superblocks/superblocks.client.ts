@@ -33,8 +33,8 @@ export class SuperblocksClient implements ISuperblocksClient {
         this.utils = utils;
     }
 
-    async createDeployment(deploymentSpaceId: string, token: string, environment: string, metadata?: IMetadataModel): Promise<IDeploymentModel> {
-        const response = await this.fetch(`${this.utils.getApiBaseUrl()}/deployment-spaces/${deploymentSpaceId}/deployments/`, {
+    async createDeployment(projectId: string, token: string, environment: string, metadata?: IMetadataModel): Promise<IDeploymentModel> {
+        const response = await this.fetch(`${this.utils.getApiBaseUrl()}/build-configs/${projectId}/deployments/`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -53,7 +53,7 @@ export class SuperblocksClient implements ISuperblocksClient {
             return deployment;
         } else {
             const error = await response.text();
-            throw new Error(`[Superblocks Provider] cannot create a deployment for space ${deploymentSpaceId}: ${error}`);
+            throw new Error(`[Superblocks Provider] cannot create a deployment for project ${projectId}: ${error}`);
         }
     }
 
