@@ -116,7 +116,7 @@ describe('SuperblocksClient:', () => {
             const userToken = 'userToken0987654321';
             const environment = 'environment1234567890';
 
-            const mockFetch = fetchMock.sandbox().post(`https://some-url/build-configs/${projectId}/deployments/`,
+            const mockFetch = fetchMock.sandbox().post(`https://some-url/build-configs/${projectId}/deployments`,
                 <MockResponse>{
                     status: 400,
                     body: {
