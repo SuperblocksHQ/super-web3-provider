@@ -30,7 +30,7 @@ export interface IManualSignProviderOptions {
     endpoint: string;
     networkId: string;
     metadata: ICustomMetadataModel;
-    saveArtifacts?: boolean;
+    saveArtifacts: boolean;
 }
 
 export interface IManualSignProvider {
