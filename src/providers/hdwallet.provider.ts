@@ -167,6 +167,10 @@ export class SuperHDWalletProvider implements IHDWalletProvider {
             this.deployment = await this.superblocksClient.createDeployment(projectId, this.options.token, this.superblocksUtils.networkIdToName(networkId), this.superblocksUtils.createDefaultMetadata(metadata, this.CI_JOB_ID));
             this.logDebug('[SuperHDWalletProvider] Deployment created');
 
+            if (this.options.saveArtifacts) {
+                this.superblocksUtils.saveArtifacts(this.deployment.id, this.options.token);
+            }
+
             // Mark as done
             this.releaseHasBeenCreated = true;
             this.logDebug('[SuperHDWalletProvider] New Superblocks Release has been created');

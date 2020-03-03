@@ -17,6 +17,7 @@
 import { injectable } from 'inversify';
 import { ISuperblocksUtils } from '../ioc/interfaces';
 import { ICustomMetadataModel, IMetadataModel } from './models';
+import { spawn } from 'child_process';
 
 @injectable()
 export class SuperblocksUtils implements ISuperblocksUtils {
@@ -65,5 +66,11 @@ export class SuperblocksUtils implements ISuperblocksUtils {
             superblocks: env.SUPER_CI || 'false'
         };
     }
-}
 
+    saveArtifacts(deploymentId: string, token: string) {
+        spawn(`truffle run artifacts --deployment_id ${deploymentId} --token ${token}`, {
+            stdio: 'inherit',
+            shell: true
+        });
+    }
+}
