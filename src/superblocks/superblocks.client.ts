@@ -34,7 +34,7 @@ export class SuperblocksClient implements ISuperblocksClient {
     }
 
     async createDeployment(projectId: string, token: string, environment: string, metadata?: IMetadataModel): Promise<IDeploymentModel> {
-        const response = await this.fetch(`${this.utils.getApiBaseUrl()}/build-configs/${projectId}/deployments/`, {
+        const response = await this.fetch(`${this.utils.getApiBaseUrl()}/build-configs/${projectId}/deployments`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
