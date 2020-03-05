@@ -52,7 +52,7 @@ export interface IHDWalletProviderOptions {
     shareNonce?: boolean;
     walletHdPath?: string;
     metadata: ICustomMetadataModel;
-    saveArtifacts?: boolean;
+    saveArtifacts: boolean;
 }
 
 export interface IHDWalletProvider {
