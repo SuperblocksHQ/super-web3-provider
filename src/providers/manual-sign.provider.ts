@@ -90,9 +90,7 @@ export class ManualSignProvider implements IManualSignProvider {
         );
         this.deploymentId = deployment.id;
 
-        if (options.saveArtifacts) {
-            this.superblocksUtils.saveArtifacts(deployment.id, options.token);
-        }
+        this.superblocksUtils.saveDeploymentInfo(deployment.id, options.token);
     }
 
     public getAccounts(): Promise<string[]> {

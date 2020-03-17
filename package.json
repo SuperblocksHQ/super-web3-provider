@@ -1,12 +1,12 @@
 {
   "name": "super-web3-provider",
-  "version": "0.0.18",
+  "version": "0.0.19-beta.1",
   "description": "Web3 provider to create a secure channel between our CI runners and the Superblocks platform to handle Smart Contract deployments through our blockchain dedicated DevOps platform",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {
     "lint": "tslint --config tslint.json --project tsconfig.json",
-    "build": "rm -rf dist && tsc",
+    "build": "tsc",
     "publish-lib": "node publish.js",
     "test": "mocha --require ts-node/register --exit src/**/*spec.ts"
   },

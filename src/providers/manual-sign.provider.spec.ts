@@ -91,9 +91,8 @@ class TestSuperblocksUtils implements ISuperblocksUtils {
     createDefaultMetadata(_metadata: IMetadataModel) {
         return {};
     }
-    saveArtifacts(_deploymentId: string) {
-        return {};
-    }
+    // tslint:disable-next-line: no-empty
+    saveDeploymentInfo(_deploymentId: string, _token: string) { }
 }
 
 class TestRpcClient implements IRpcClient {
@@ -180,8 +179,7 @@ describe('ManualSignProvider:', () => {
                 from: '0x3117958590752b0871548Dd8715b4C4c41372d3d',
                 endpoint: 'http://127.0.0.1',
                 networkId: '1',
-                metadata: {},
-                saveArtifacts: false
+                metadata: {}
             });
         });
 
@@ -193,8 +191,7 @@ describe('ManualSignProvider:', () => {
                     from: '',
                     endpoint: 'http://localhost',
                     networkId: '1',
-                    metadata: {},
-                    saveArtifacts: false
+                    metadata: {}
                 });
             });
         });
@@ -207,8 +204,7 @@ describe('ManualSignProvider:', () => {
                     from: '0x1234567890',
                     endpoint: 'http://localhost',
                     networkId: '1',
-                    metadata: {},
-                    saveArtifacts: false
+                    metadata: {}
                 });
             });
         });
@@ -221,8 +217,7 @@ describe('ManualSignProvider:', () => {
                     from: '0x3117958590752b0871548Dd8715b4C4c41372d3d',
                     endpoint: '',
                     networkId: '1',
-                    metadata: {},
-                    saveArtifacts: false
+                    metadata: {}
                 });
             });
         });
@@ -235,8 +230,7 @@ describe('ManualSignProvider:', () => {
                     from: '0x3117958590752b0871548Dd8715b4C4c41372d3d',
                     endpoint: 'localhost',
                     networkId: '1',
-                    metadata: {},
-                    saveArtifacts: false
+                    metadata: {}
                 });
             });
         });
@@ -249,8 +243,7 @@ describe('ManualSignProvider:', () => {
                     from: '0x3117958590752b0871548Dd8715b4C4c41372d3d',
                     endpoint: 'http://localhost',
                     networkId: '',
-                    metadata: {},
-                    saveArtifacts: false
+                    metadata: {}
                 });
             });
         });
@@ -263,8 +256,7 @@ describe('ManualSignProvider:', () => {
                     from: '0x3117958590752b0871548Dd8715b4C4c41372d3d',
                     endpoint: 'http://localhost',
                     networkId: 'one',
-                    metadata: {},
-                    saveArtifacts: false
+                    metadata: {}
                 });
             });
         });
@@ -277,8 +269,7 @@ describe('ManualSignProvider:', () => {
                     from: '0x3117958590752b0871548Dd8715b4C4c41372d3d',
                     endpoint: 'http://localhost',
                     networkId: 'one',
-                    metadata: {},
-                    saveArtifacts: false
+                    metadata: {}
                 });
             });
         });
@@ -291,8 +282,7 @@ describe('ManualSignProvider:', () => {
                     from: '0x3117958590752b0871548Dd8715b4C4c41372d3d',
                     endpoint: 'http://localhost',
                     networkId: 'one',
-                    metadata: {},
-                    saveArtifacts: false
+                    metadata: {}
                 });
             });
         });
@@ -315,8 +305,7 @@ describe('ManualSignProvider:', () => {
                 from: fromAddress,
                 endpoint: 'http://127.0.0.1',
                 networkId: '1',
-                metadata: {},
-                saveArtifacts: false
+                metadata: {}
             });
 
             const accounts = await manualSignProvider.getAccounts();
@@ -353,8 +342,7 @@ describe('ManualSignProvider:', () => {
                     from: fromAddress,
                     endpoint: 'http://127.0.0.1',
                     networkId: '1',
-                    metadata: {},
-                    saveArtifacts: false
+                    metadata: {}
                 });
             });
 
@@ -378,8 +366,7 @@ describe('ManualSignProvider:', () => {
                     from: fromAddress,
                     endpoint: 'http://127.0.0.1',
                     networkId: '1',
-                    metadata: {},
-                    saveArtifacts: false
+                    metadata: {}
                 });
             });
 
@@ -403,8 +390,7 @@ describe('ManualSignProvider:', () => {
                     from: fromAddress,
                     endpoint: 'http://127.0.0.1',
                     networkId: '1',
-                    metadata: {},
-                    saveArtifacts: false
+                    metadata: {}
                 });
             });
 
@@ -474,8 +460,7 @@ describe('ManualSignProvider:', () => {
                 from: fromAddress,
                 endpoint: 'http://127.0.0.1',
                 networkId: '1',
-                metadata: {},
-                saveArtifacts: false
+                metadata: {}
             });
 
             await assert.rejects(manualSignProvider.sendMessage({
@@ -513,8 +498,7 @@ describe('ManualSignProvider:', () => {
                 from: fromAddress,
                 endpoint: 'http://127.0.0.1',
                 networkId: '1',
-                metadata: {},
-                saveArtifacts: false
+                metadata: {}
             });
 
             await manualSignProvider.sendMessage({
@@ -546,8 +530,7 @@ describe('ManualSignProvider:', () => {
                 from: fromAddress,
                 endpoint: 'http://127.0.0.1',
                 networkId: '1',
-                metadata: {},
-                saveArtifacts: false
+                metadata: {}
             });
 
             await manualSignProvider.send({
@@ -586,8 +569,7 @@ describe('ManualSignProvider:', () => {
                 from: fromAddress,
                 endpoint: 'http://127.0.0.1',
                 networkId: '1',
-                metadata: {},
-                saveArtifacts: false
+                metadata: {}
             });
 
             await manualSignProvider.send({
@@ -618,8 +600,7 @@ describe('ManualSignProvider:', () => {
                 from: fromAddress,
                 endpoint: 'http://127.0.0.1',
                 networkId: '1',
-                metadata: {},
-                saveArtifacts: false
+                metadata: {}
             });
 
             manualSignProvider.sendAsync({
@@ -691,8 +672,7 @@ describe('ManualSignProvider:', () => {
                 from: fromAddress,
                 endpoint: 'http://127.0.0.1',
                 networkId: '1',
-                metadata: {},
-                saveArtifacts: false
+                metadata: {}
             });
 
             manualSignProvider.sendAsync({
@@ -714,8 +694,7 @@ describe('ManualSignProvider:', () => {
                 from: fromAddress,
                 endpoint: 'http://127.0.0.1',
                 networkId: '1',
-                metadata: {},
-                saveArtifacts: false
+                metadata: {}
             });
 
             manualSignProvider.sendAsync({
@@ -737,13 +716,13 @@ describe('ManualSignProvider:', () => {
         const mockUtils = new TestSuperblocksUtils();
         const manualSignProvider = new ManualSignProvider(client, pusherClient, rpcClient, mockUtils);
 
-        assert.rejects(() => manualSignProvider.init({ projectId: '', token: '', from: '', endpoint: '', networkId: '', metadata: {}, saveArtifacts: false }));
-        assert.rejects(() => manualSignProvider.init({ projectId: 'dummy', token: '', from: '', endpoint: '', networkId: '', metadata: {}, saveArtifacts: false }));
-        assert.rejects(() => manualSignProvider.init({ projectId: 'dummy', token: 'dummy', from: '', endpoint: '', networkId: '', metadata: {}, saveArtifacts: false }));
-        assert.rejects(() => manualSignProvider.init({ projectId: 'dummy', token: 'dummy', from: '0x0', endpoint: '', networkId: '', metadata: {}, saveArtifacts: false }));
-        assert.rejects(() => manualSignProvider.init({ projectId: 'dummy', token: 'dummy', from: '0x3117958590752b0871548Dd8715b4C4c41372d3d', endpoint: '', networkId: '', metadata: {}, saveArtifacts: false }));
-        assert.rejects(() => manualSignProvider.init({ projectId: 'dummy', token: 'dummy', from: '0x3117958590752b0871548Dd8715b4C4c41372d3d', endpoint: 'something', networkId: '', metadata: {}, saveArtifacts: false }));
-        assert.rejects(() => manualSignProvider.init({ projectId: 'dummy', token: 'dummy', from: '0x3117958590752b0871548Dd8715b4C4c41372d3d', endpoint: 'something', networkId: '1a', metadata: {}, saveArtifacts: false }));
-        assert.doesNotReject(() => manualSignProvider.init({ projectId: 'dummy', token: 'dummy', from: '0x3117958590752b0871548Dd8715b4C4c41372d3d', endpoint: 'http://something', networkId: '1', metadata: {}, saveArtifacts: false }));
+        assert.rejects(() => manualSignProvider.init({ projectId: '', token: '', from: '', endpoint: '', networkId: '', metadata: {} }));
+        assert.rejects(() => manualSignProvider.init({ projectId: 'dummy', token: '', from: '', endpoint: '', networkId: '', metadata: {} }));
+        assert.rejects(() => manualSignProvider.init({ projectId: 'dummy', token: 'dummy', from: '', endpoint: '', networkId: '', metadata: {} }));
+        assert.rejects(() => manualSignProvider.init({ projectId: 'dummy', token: 'dummy', from: '0x0', endpoint: '', networkId: '', metadata: {} }));
+        assert.rejects(() => manualSignProvider.init({ projectId: 'dummy', token: 'dummy', from: '0x3117958590752b0871548Dd8715b4C4c41372d3d', endpoint: '', networkId: '', metadata: {} }));
+        assert.rejects(() => manualSignProvider.init({ projectId: 'dummy', token: 'dummy', from: '0x3117958590752b0871548Dd8715b4C4c41372d3d', endpoint: 'something', networkId: '', metadata: {} }));
+        assert.rejects(() => manualSignProvider.init({ projectId: 'dummy', token: 'dummy', from: '0x3117958590752b0871548Dd8715b4C4c41372d3d', endpoint: 'something', networkId: '1a', metadata: {} }));
+        assert.doesNotReject(() => manualSignProvider.init({ projectId: 'dummy', token: 'dummy', from: '0x3117958590752b0871548Dd8715b4C4c41372d3d', endpoint: 'http://something', networkId: '1', metadata: {} }));
     });
 });

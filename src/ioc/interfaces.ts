@@ -10,7 +10,7 @@ export interface ISuperblocksUtils {
     getApiBaseUrl: () => string;
     networkIdToName: (networkId: string) => string;
     createDefaultMetadata: (metadata: ICustomMetadataModel, ciJobId: string) => IMetadataModel;
-    saveArtifacts: (deploymentId: string, token: string) => void;
+    saveDeploymentInfo(deploymentId: string, token: string): void;
 }
 
 export interface ISuperblocksClient {
@@ -30,7 +30,6 @@ export interface IManualSignProviderOptions {
     endpoint: string;
     networkId: string;
     metadata: ICustomMetadataModel;
-    saveArtifacts: boolean;
 }
 
 export interface IManualSignProvider {
@@ -52,7 +51,6 @@ export interface IHDWalletProviderOptions {
     shareNonce?: boolean;
     walletHdPath?: string;
     metadata: ICustomMetadataModel;
-    saveArtifacts: boolean;
 }
 
 export interface IHDWalletProvider {

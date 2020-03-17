@@ -17,7 +17,8 @@
 import { injectable } from 'inversify';
 import { ISuperblocksUtils } from '../ioc/interfaces';
 import { ICustomMetadataModel, IMetadataModel } from './models';
-import { spawn } from 'child_process';
+import fs from 'fs';
+import path from 'path';
 
 @injectable()
 export class SuperblocksUtils implements ISuperblocksUtils {
@@ -67,10 +68,10 @@ export class SuperblocksUtils implements ISuperblocksUtils {
         };
     }
 
-    saveArtifacts(deploymentId: string, token: string) {
-        spawn(`truffle run artifacts --deployment_id ${deploymentId} --token ${token}`, {
-            stdio: 'inherit',
-            shell: true
+    saveDeploymentInfo(deploymentId: string, token: string) {
+        fs.writeFileSync(path.join('.superblocks', 'deployment.json'), {
+            deploymentId,
+            token
         });
     }
 }
