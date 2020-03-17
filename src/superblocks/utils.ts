@@ -63,9 +63,13 @@ export class SuperblocksUtils implements ISuperblocksUtils {
     }
 
     saveDeploymentInfo(deploymentId: string, token: string) {
-        fs.writeFileSync(path.join('.superblocks', 'deployment.json'), {
+        const folder = '.superblocks';
+        if (!fs.existsSync(folder)) {
+            fs.mkdirSync(folder);
+        }
+        fs.writeFileSync(path.join(folder, 'deployment.json'), JSON.stringify({
             deploymentId,
             token
-        });
+        }));
     }
 }
