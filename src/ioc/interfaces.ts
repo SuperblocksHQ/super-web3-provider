@@ -29,7 +29,7 @@ export interface IManualSignProviderOptions {
     from: string;
     endpoint: string;
     networkId: string;
-    metadata: ICustomMetadataModel;
+    metadata?: ICustomMetadataModel;
 }
 
 export interface IManualSignProvider {

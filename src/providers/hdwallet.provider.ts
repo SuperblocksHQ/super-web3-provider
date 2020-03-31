@@ -45,7 +45,7 @@ export class SuperHDWalletProvider implements IHDWalletProvider {
         numAddresses = 10,
         shareNonce = true,
         walletHdPath = `m/44'/60'/0'/0/`,
-        metadata= {}
+        metadata = {}
     }: IHDWalletProviderOptions) {
         console.info('[SuperHDWalletProvider] Initializing...');
 
