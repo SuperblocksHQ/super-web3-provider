@@ -50,7 +50,7 @@ export interface IHDWalletProviderOptions {
     numAddresses?: number;
     shareNonce?: boolean;
     walletHdPath?: string;
-    metadata: ICustomMetadataModel;
+    metadata?: ICustomMetadataModel;
 }
 
 export interface IHDWalletProvider {
